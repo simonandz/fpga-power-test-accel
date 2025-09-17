@@ -1,6 +1,5 @@
 # ===== Non-project build for Basys 3 hello_top =====
 
-# Resolve paths relative to this script
 set script_dir  [file normalize [file dirname [info script]]]
 set repo_root   [file normalize [file join $script_dir ..]]
 
@@ -13,7 +12,6 @@ set rpt_dir     [file join $repo_root reports]
 file mkdir $build_dir
 file mkdir $rpt_dir
 
-# Read sources / constraints
 set sv_list [glob -nocomplain [file join $src_dir *.sv]]
 if {[llength $sv_list] == 0} {
   puts "ERROR: No SystemVerilog files found in $src_dir"
@@ -28,7 +26,6 @@ if {![file exists $xdc_file]} {
 }
 read_xdc $xdc_file
 
-# Synthesize, implement, report
 set top hello_top
 synth_design -top $top -part $part
 
