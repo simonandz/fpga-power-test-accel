@@ -3,8 +3,8 @@ module hello_top #(
 ) (
   input  logic clk,
   input  logic rst_n,
-  output logic led_on,     
-  output logic led_blink   
+  output logic led_on,     // constant 1
+  output logic led_blink   // blinking
 );
 
   logic [DIV_BIT-1:0] ctr;
