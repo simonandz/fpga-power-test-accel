@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module hello_top #(
   parameter int DIV_BIT = 26
 ) (

@@ -1,0 +1,1 @@
+-debug "typical" "hello_tb" -s "hello_tb_sim" 
