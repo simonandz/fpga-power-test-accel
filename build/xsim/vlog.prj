@@ -1,0 +1,9 @@
+sv xil_defaultlib  \
+"../../common/rtl/hello_top.sv" \
+"../../common/rtl/hello_top_2c.sv" \
+"../../common/rtl/hello_top_3c.sv" \
+
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

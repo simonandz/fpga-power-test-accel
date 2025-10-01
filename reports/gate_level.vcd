@@ -1,0 +1,169 @@
+$date
+   Wed Oct  1 14:57:29 2025
+$end
+
+$version
+  2024.2.0
+$end
+
+$timescale
+  1ps
+$end
+
+$scope module hello_top $end
+$var wire 1 ! clear $end
+$var wire 1 " clk $end
+$var wire 1 # clk_IBUF $end
+$var wire 1 $ clk_IBUF_BUFG $end
+$var wire 1 % \ctr[0]_i_3_n_0  $end
+$var wire 1 & \ctr_reg[0]_i_2_n_0  $end
+$var wire 1 ' \ctr_reg[0]_i_2_n_4  $end
+$var wire 1 ( \ctr_reg[0]_i_2_n_5  $end
+$var wire 1 ) \ctr_reg[0]_i_2_n_6  $end
+$var wire 1 * \ctr_reg[0]_i_2_n_7  $end
+$var wire 1 + \ctr_reg[12]_i_1_n_0  $end
+$var wire 1 , \ctr_reg[12]_i_1_n_4  $end
+$var wire 1 - \ctr_reg[12]_i_1_n_5  $end
+$var wire 1 . \ctr_reg[12]_i_1_n_6  $end
+$var wire 1 / \ctr_reg[12]_i_1_n_7  $end
+$var wire 1 0 \ctr_reg[16]_i_1_n_0  $end
+$var wire 1 1 \ctr_reg[16]_i_1_n_4  $end
+$var wire 1 2 \ctr_reg[16]_i_1_n_5  $end
+$var wire 1 3 \ctr_reg[16]_i_1_n_6  $end
+$var wire 1 4 \ctr_reg[16]_i_1_n_7  $end
+$var wire 1 5 \ctr_reg[20]_i_1_n_0  $end
+$var wire 1 6 \ctr_reg[20]_i_1_n_4  $end
+$var wire 1 7 \ctr_reg[20]_i_1_n_5  $end
+$var wire 1 8 \ctr_reg[20]_i_1_n_6  $end
+$var wire 1 9 \ctr_reg[20]_i_1_n_7  $end
+$var wire 1 : \ctr_reg[24]_i_1_n_6  $end
+$var wire 1 ; \ctr_reg[24]_i_1_n_7  $end
+$var wire 1 < \ctr_reg[4]_i_1_n_0  $end
+$var wire 1 = \ctr_reg[4]_i_1_n_4  $end
+$var wire 1 > \ctr_reg[4]_i_1_n_5  $end
+$var wire 1 ? \ctr_reg[4]_i_1_n_6  $end
+$var wire 1 @ \ctr_reg[4]_i_1_n_7  $end
+$var wire 1 A \ctr_reg[8]_i_1_n_0  $end
+$var wire 1 B \ctr_reg[8]_i_1_n_4  $end
+$var wire 1 C \ctr_reg[8]_i_1_n_5  $end
+$var wire 1 D \ctr_reg[8]_i_1_n_6  $end
+$var wire 1 E \ctr_reg[8]_i_1_n_7  $end
+$var wire 1 F \ctr_reg_n_0_[0]  $end
+$var wire 1 G \ctr_reg_n_0_[10]  $end
+$var wire 1 H \ctr_reg_n_0_[11]  $end
+$var wire 1 I \ctr_reg_n_0_[12]  $end
+$var wire 1 J \ctr_reg_n_0_[13]  $end
+$var wire 1 K \ctr_reg_n_0_[14]  $end
+$var wire 1 L \ctr_reg_n_0_[15]  $end
+$var wire 1 M \ctr_reg_n_0_[16]  $end
+$var wire 1 N \ctr_reg_n_0_[17]  $end
+$var wire 1 O \ctr_reg_n_0_[18]  $end
+$var wire 1 P \ctr_reg_n_0_[19]  $end
+$var wire 1 Q \ctr_reg_n_0_[1]  $end
+$var wire 1 R \ctr_reg_n_0_[20]  $end
+$var wire 1 S \ctr_reg_n_0_[21]  $end
+$var wire 1 T \ctr_reg_n_0_[22]  $end
+$var wire 1 U \ctr_reg_n_0_[23]  $end
+$var wire 1 V \ctr_reg_n_0_[24]  $end
+$var wire 1 W \ctr_reg_n_0_[2]  $end
+$var wire 1 X \ctr_reg_n_0_[3]  $end
+$var wire 1 Y \ctr_reg_n_0_[4]  $end
+$var wire 1 Z \ctr_reg_n_0_[5]  $end
+$var wire 1 [ \ctr_reg_n_0_[6]  $end
+$var wire 1 \ \ctr_reg_n_0_[7]  $end
+$var wire 1 ] \ctr_reg_n_0_[8]  $end
+$var wire 1 ^ \ctr_reg_n_0_[9]  $end
+$var wire 1 _ led_blink $end
+$var wire 1 ` led_blink_OBUF $end
+$var wire 1 a led_on $end
+$var wire 1 b rst_n $end
+$var wire 1 c rst_n_IBUF $end
+$var wire 3 d \NLW_ctr_reg[0]_i_2_CO_UNCONNECTED  [2:0] $end
+$var wire 3 e \NLW_ctr_reg[12]_i_1_CO_UNCONNECTED  [2:0] $end
+$var wire 3 f \NLW_ctr_reg[16]_i_1_CO_UNCONNECTED  [2:0] $end
+$var wire 3 g \NLW_ctr_reg[20]_i_1_CO_UNCONNECTED  [2:0] $end
+$var wire 4 h \NLW_ctr_reg[24]_i_1_CO_UNCONNECTED  [3:0] $end
+$var wire 2 i \NLW_ctr_reg[24]_i_1_O_UNCONNECTED  [1:0] $end
+$var wire 3 j \NLW_ctr_reg[4]_i_1_CO_UNCONNECTED  [2:0] $end
+$var wire 3 k \NLW_ctr_reg[8]_i_1_CO_UNCONNECTED  [2:0] $end
+$upscope $end
+$enddefinitions $end
+
+#10001000000
+$dumpvars
+0!
+z"
+x#
+x$
+1%
+0&
+0'
+0(
+0)
+1*
+0+
+0,
+0-
+0.
+0/
+00
+01
+02
+03
+04
+05
+06
+07
+08
+09
+0:
+0;
+0<
+0=
+0>
+0?
+0@
+0A
+0B
+0C
+0D
+0E
+0F
+0G
+0H
+0I
+0J
+0K
+0L
+0M
+0N
+0O
+0P
+0Q
+0R
+0S
+0T
+0U
+0V
+0W
+0X
+0Y
+0Z
+0[
+0\
+0]
+0^
+0_
+0`
+1a
+1b
+1c
+b0 d
+b0 e
+b0 f
+b0 g
+b0 h
+b0 i
+b0 j
+b0 k
+$end

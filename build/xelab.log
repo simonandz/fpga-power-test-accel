@@ -1,0 +1,9 @@
+Vivado Simulator v2024.2.0
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: R:\fpga\xillinix\Vivado\2024.2\bin\unwrapped\win64.o\xelab.exe -timescale 1ps/1ps -debug typical -L unisims_ver -L unimacro_ver -L secureip -L simprims_ver hello_tb glbl -s hello_top_time 
+Multi-threading is on. Using 10 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+ERROR: [VRFC 10-2861] module 'hello_top' does not have a parameter named DIV_BIT [R:/fpga/fpga-power-test-accel/common/tb/hello_tb.sv:21]
+ERROR: [XSIM 43-3322] Static elaboration of top level Verilog design unit(s) in library work failed.

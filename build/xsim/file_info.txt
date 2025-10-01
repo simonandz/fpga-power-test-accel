@@ -1,0 +1,4 @@
+hello_top.sv,systemverilog,xil_defaultlib,../../common/rtl/hello_top.sv,
+hello_top_2c.sv,systemverilog,xil_defaultlib,../../common/rtl/hello_top_2c.sv,
+hello_top_3c.sv,systemverilog,xil_defaultlib,../../common/rtl/hello_top_3c.sv,
+glbl.v,Verilog,xil_defaultlib,glbl.v
