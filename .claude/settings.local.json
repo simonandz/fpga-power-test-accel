@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/r/icarus_verilog/iverilog/iverilog/bin/iverilog.exe\" -g2012 -o build/test.vvp common/rtl/accel_pkg.sv common/rtl/bram_bank.sv common/rtl/memory_controller.sv common/tb/tb_memory_controller.sv)",
+      "Bash(\"/r/icarus_verilog/iverilog/iverilog/bin/vvp.exe\" build/test.vvp)",
+      "Bash(timeout:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
