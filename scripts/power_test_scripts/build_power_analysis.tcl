@@ -6,7 +6,7 @@ cd [file join $repo_root build]
 
 # Define all file paths relative to repo root
 set dut_netlist [file join $repo_root build timesim hello_top_funcsim.v]
-set tb_sv       [file join $repo_root common tb hello_tb.sv]
+set tb_sv       [file join $repo_root common tb hello_tb_postsyn.sv]
 set saif_out    [file join $repo_root reports hello_top_time.saif]
 set vcd_out     [file join $repo_root reports hello_top_time.vcd]
 
@@ -54,7 +54,7 @@ puts "Step 3: Running simulation..."
 set sim_script [file join $repo_root build run_simulation.tcl]
 set fh [open $sim_script w]
 puts $fh "open_saif \"$saif_out\""
-puts $fh "log_saif \[get_objects -r *\]"
+puts $fh "log_saif \[get_objects -r /hello_tb/dut/*\]"
 puts $fh "run 5 ms"
 puts $fh "close_saif"
 puts $fh "quit"

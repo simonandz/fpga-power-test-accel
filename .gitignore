@@ -1,0 +1,81 @@
+# .gitignore for FPGA Power Test Project
+
+# ===== Xilinx Vivado Generated Files =====
+*.jou
+*.log
+*.backup.jou
+*.backup.log
+
+# Vivado project files
+*.cache/
+*.hw/
+*.ip_user_files/
+*.sim/
+.Xil/
+*.str
+
+# Synthesis & Implementation outputs (large binary files)
+*.dcp
+*.bit
+*.ltx
+*.mmi
+*.prm
+
+# Simulation files
+*.wdb
+*.vcd
+*.saif
+*.pb
+xsim.dir/
+xsim/
+
+# SDF files (timing simulation)
+*.sdf
+
+# Generated netlists (can be regenerated)
+*_funcsim.v
+*_timesim.v
+*_funcsim.vhdl
+*_timesim.vhdl
+
+# ===== Build Directory =====
+# Keep directory structure but ignore generated content
+build/*.dcp
+build/*.bit
+build/*.wdb
+build/*.vcd
+build/*.pb
+build/*.log
+build/*.jou
+build/xsim.dir/
+build/xsim/
+build/timesim/*.v
+build/timesim/*.sdf
+build/run_simulation*.tcl
+
+# ===== Reports Directory =====
+# Keep final reports but ignore temporary/test reports
+reports/temp_*.rpt
+reports/*_test.rpt
+reports/*.saif
+reports/*.vcd
+
+# ===== Scripts =====
+# Keep all scripts - they're source files
+
+# ===== Other =====
+# OS files
+.DS_Store
+Thumbs.db
+*~
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary files
+*.tmp
+*.bak
+design_nets_analysis.txt
