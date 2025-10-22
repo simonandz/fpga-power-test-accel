@@ -22,16 +22,16 @@ module bram_bank #(
     // BRAM storage
     (* ram_style = "block" *) logic [DATA_WIDTH-1:0] mem [0:DEPTH-1];
 
-    // Initialize for simulation - use blocking assignment
+    // Initialize memory for simulation
     integer j;
     initial begin
         for (j = 0; j < DEPTH; j = j + 1) begin
             mem[j] = 8'h00;
         end
-        dout = 8'h00;
     end
 
     // Registered output with write-first behavior
+    // Note: dout initialized to 'X' by SystemVerilog, will be set on first read
     always_ff @(posedge clk) begin
         if (en) begin
             if (we) begin

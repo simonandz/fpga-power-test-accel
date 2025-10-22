@@ -204,12 +204,13 @@ module tb_memory_controller;
         req.addr     = addr;
         req.we       = 1'b0;
         req.re       = 1'b1;
-        @(posedge clk);
+        @(posedge clk);  // Cycle N+1: BRAM reads, re_q=1
         req.re       = 1'b0;
-        @(posedge clk);  // Wait for response
+        @(posedge clk);  // Cycle N+2: resp.valid=1, data available
+        // Sample immediately after clock edge
+        read_data = resp.data;
 
         if (resp.valid) begin
-            read_data = resp.data;
             if (read_data == expected) begin
                 $display("  Read:  Bank[%0d] Addr[0x%0h] = 0x%0h ✓", bank, addr, read_data);
             end else begin
@@ -218,7 +219,7 @@ module tb_memory_controller;
                 $fatal(1, "Data mismatch!");
             end
         end else begin
-            $display("  ERROR: No valid response!");
+            $display("  ERROR: No valid response! (read_data=0x%0h)", read_data);
             $fatal(1, "Response not valid!");
         end
     endtask

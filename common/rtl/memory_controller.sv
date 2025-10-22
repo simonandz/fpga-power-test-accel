@@ -49,24 +49,19 @@ module memory_controller (
     //--------------------------------------------------------------------------
     // BRAM Control Logic
     //--------------------------------------------------------------------------
-    integer i;
-    always_comb begin
-        // Default: all banks disabled
-        for (i = 0; i < BRAM_BANKS; i = i + 1) begin
-            bram_en[i]   = 1'b0;
-            bram_we[i]   = 1'b0;
-            bram_addr[i] = '0;
-            bram_din[i]  = '0;
-        end
+    // Use generate with continuous assignments for Icarus Verilog compatibility
+    genvar i;
+    generate
+        for (i = 0; i < BRAM_BANKS; i = i + 1) begin : gen_bram_control
+            logic bank_selected;
+            assign bank_selected = (selected_bank == i) && bank_power_en[i];
 
-        // Enable selected bank if powered on
-        if (selected_bank < BRAM_BANKS && bank_power_en[selected_bank]) begin
-            bram_en[selected_bank]   = req.we | req.re;
-            bram_we[selected_bank]   = req.we;
-            bram_addr[selected_bank] = selected_addr;
-            bram_din[selected_bank]  = req.data;
+            assign bram_en[i]   = bank_selected && (req.we | req.re);
+            assign bram_we[i]   = bank_selected && req.we;
+            assign bram_addr[i] = bank_selected ? selected_addr : '0;
+            assign bram_din[i]  = bank_selected ? req.data : '0;
         end
-    end
+    endgenerate
 
     //--------------------------------------------------------------------------
     // Read Pipeline (1 cycle latency for BRAM)

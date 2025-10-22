@@ -3,10 +3,10 @@
 # SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
 # IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
 # SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
-# Start of session at: Wed Oct  8 10:13:33 2025
-# Process ID         : 28108
+# Start of session at: Wed Oct 22 13:03:48 2025
+# Process ID         : 30464
 # Current directory  : R:/fpga/fpga-power-test-accel/build
-# Command line       : xsim.exe -mode tcl -source {xsim.dir/hello_tb_rtl/xsim_script.tcl}
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/hello_top_time/xsim_script.tcl}
 # Log file           : R:/fpga/fpga-power-test-accel/build/xsim.log
 # Journal file       : R:/fpga/fpga-power-test-accel/build\xsim.jou
 # Running On         : DESKTOP-VAD40IB
@@ -17,9 +17,9 @@
 # CPU Physical cores : 6
 # CPU Logical cores  : 12
 # Host memory        : 17021 MB
-# Swap memory        : 6174 MB
-# Total Virtual      : 23195 MB
-# Available Virtual  : 4681 MB
+# Swap memory        : 10325 MB
+# Total Virtual      : 27346 MB
+# Available Virtual  : 3734 MB
 #-----------------------------------------------------------
-source xsim.dir/hello_tb_rtl/xsim_script.tcl
-source R:/fpga/fpga-power-test-accel/build/run_simulation_rtl.tcl
+source xsim.dir/hello_top_time/xsim_script.tcl
+source R:/fpga/fpga-power-test-accel/build/run_simulation.tcl

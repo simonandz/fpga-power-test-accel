@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 `ifndef ACCEL_PKG_SV
 `define ACCEL_PKG_SV
 

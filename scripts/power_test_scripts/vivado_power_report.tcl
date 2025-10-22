@@ -32,8 +32,6 @@ puts "Reading SAIF file..."
 read_saif $saif_file
 
 puts "\nAnalyzing SAIF matching..."
-puts "Tip: 51% matching is actually reasonable for post-synthesis netlists"
-puts "because synthesis transforms signal names significantly."
 
 # Generate power reports
 puts "Generating power report with SAIF activity..."

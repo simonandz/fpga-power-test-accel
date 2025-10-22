@@ -149,20 +149,32 @@ module power_manager (
     //--------------------------------------------------------------------------
     `ifdef SIMULATION
     integer active_banks;
-    integer i;
+
+    function automatic integer count_active_banks;
+        input logic [BRAM_BANKS-1:0] banks;
+        integer i, count;
+        begin
+            count = 0;
+            for (i = 0; i < BRAM_BANKS; i = i + 1) begin
+                if (banks[i])
+                    count = count + 1;
+            end
+            count_active_banks = count;
+        end
+    endfunction
 
     always_comb begin
-        active_banks = 0;
-        for (i = 0; i < BRAM_BANKS; i = i + 1) begin
-            if (bank_power_en[i])
-                active_banks = active_banks + 1;
-        end
+        active_banks = count_active_banks(bank_power_en);
     end
 
     // Monitor power state changes
-    always_ff @(posedge clk) begin
-        if (rst_n) begin
-            if ($changed(active_banks))
+    logic [BRAM_BANKS-1:0] bank_power_en_q;
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            bank_power_en_q <= '0;
+        end else begin
+            bank_power_en_q <= bank_power_en;
+            if (bank_power_en != bank_power_en_q)
                 $display("[PowerMgr @ %0t] Active BRAM banks: %0d/%0d",
                         $time, active_banks, BRAM_BANKS);
         end

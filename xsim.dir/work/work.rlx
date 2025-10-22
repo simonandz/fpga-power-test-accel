@@ -2,5 +2,10 @@
 2020.2
 Nov  8 2024
 22:36:57
-R:/fpga/fpga-power-test-accel/common/rtl/hello_top.sv,1758734697,systemVerilog,,R:/fpga/fpga-power-test-accel/common/tb/hello_tb.sv,,hello_top,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/rtl/accel_pkg.sv,1761148133,systemVerilog,R:/fpga/fpga-power-test-accel/common/rtl/power_manager.sv;R:/fpga/fpga-power-test-accel/common/tb/tb_power_manager.sv,R:/fpga/fpga-power-test-accel/common/rtl/power_manager.sv,,$unit_accel_pkg_sv_831298077;accel_pkg,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/rtl/bram_bank.sv,1761148084,systemVerilog,,R:/fpga/fpga-power-test-accel/common/rtl/memory_controller.sv,,bram_bank,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/rtl/memory_controller.sv,1761146916,systemVerilog,,R:/fpga/fpga-power-test-accel/common/tb/tb_memory_controller.sv,,memory_controller,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/rtl/power_manager.sv,1761145524,systemVerilog,,R:/fpga/fpga-power-test-accel/common/tb/tb_power_manager.sv,,power_manager,,,,,,,,
 R:/fpga/fpga-power-test-accel/common/tb/hello_tb.sv,1758734409,systemVerilog,,,,hello_tb,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/tb/tb_memory_controller.sv,1761148190,systemVerilog,,,,tb_memory_controller,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/tb/tb_power_manager.sv,1759949058,systemVerilog,,,,tb_power_manager,,,,,,,,

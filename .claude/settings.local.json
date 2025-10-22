@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash scripts/run_all_tests.sh:*)",
+      "Bash(where:*)",
+      "Bash(where.exe:*)",
+      "Bash(/r/icarus_verilog/iverilog/iverilog/bin/vvp build/test_tb_mem.vvp)",
+      "Bash(/r/icarus_verilog/iverilog/iverilog/bin/iverilog:*)",
+      "Bash(/r/icarus_verilog/iverilog/iverilog/bin/vvp build/test_bram_simple.vvp)",
+      "Bash(cmd /c \"where vivado 2>nul && where xvlog 2>nul || echo Not found\")",
+      "Read(//r/fpga/xillinix/Vivado/2024.2/bin/**)",
+      "Bash(/r/fpga/xillinix/Vivado/2024.2/bin/xvlog:*)",
+      "Bash(/r/fpga/xillinix/Vivado/2024.2/bin/xelab:*)",
+      "Bash(/r/fpga/xillinix/Vivado/2024.2/bin/xsim:*)",
+      "Bash(chmod:*)",
+      "Bash(bash:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

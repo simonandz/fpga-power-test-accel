@@ -3,10 +3,10 @@
 # SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
 # IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
 # SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
-# Start of session at: Wed Oct  8 10:13:33 2025
-# Process ID         : 28108
+# Start of session at: Wed Oct 22 13:03:48 2025
+# Process ID         : 30464
 # Current directory  : R:/fpga/fpga-power-test-accel/build
-# Command line       : xsim.exe -mode tcl -source {xsim.dir/hello_tb_rtl/xsim_script.tcl}
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/hello_top_time/xsim_script.tcl}
 # Log file           : R:/fpga/fpga-power-test-accel/build/xsim.log
 # Journal file       : R:/fpga/fpga-power-test-accel/build\xsim.jou
 # Running On         : DESKTOP-VAD40IB
@@ -17,20 +17,21 @@
 # CPU Physical cores : 6
 # CPU Logical cores  : 12
 # Host memory        : 17021 MB
-# Swap memory        : 6174 MB
-# Total Virtual      : 23195 MB
-# Available Virtual  : 4681 MB
+# Swap memory        : 10325 MB
+# Total Virtual      : 27346 MB
+# Available Virtual  : 3734 MB
 #-----------------------------------------------------------
-source xsim.dir/hello_tb_rtl/xsim_script.tcl
-# xsim {hello_tb_rtl} -autoloadwcfg -tclbatch {R:/fpga/fpga-power-test-accel/build/run_simulation_rtl.tcl}
+source xsim.dir/hello_top_time/xsim_script.tcl
+# xsim {hello_top_time} -autoloadwcfg -tclbatch {R:/fpga/fpga-power-test-accel/build/run_simulation.tcl}
 Time resolution is 1 ps
-source R:/fpga/fpga-power-test-accel/build/run_simulation_rtl.tcl
-## open_saif "R:/fpga/fpga-power-test-accel/reports/hello_top_rtl.saif"
+source R:/fpga/fpga-power-test-accel/build/run_simulation.tcl
+## open_saif "R:/fpga/fpga-power-test-accel/reports/hello_top_time.saif"
 ## log_saif [get_objects -r /hello_tb/dut/*]
-## run 10 ms
+## run 5 ms
 [  0.000 ns] Simulation starting
 [995.000 ns] Reset released
-run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:10 . Memory (MB): peak = 201.754 ; gain = 0.000
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:10 . Memory (MB): peak = 194.523 ; gain = 0.000
 ## close_saif
 ## quit
-INFO: [Common 17-206] Exiting xsim at Wed Oct  8 10:13:45 2025...
+INFO: xsimkernel Simulation Memory Usage: 27692 KB (Peak: 27692 KB), Simulation CPU Usage: 10968 ms
+INFO: [Common 17-206] Exiting xsim at Wed Oct 22 13:04:00 2025...

@@ -1,11 +1,24 @@
 Vivado Simulator v2024.2.0
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
-Running: R:\fpga\xillinix\Vivado\2024.2\bin\unwrapped\win64.o\xelab.exe -timescale 1ps/1ps -debug typical -L unisims_ver -L unimacro_ver -L secureip hello_tb glbl -s hello_tb_timing 
+Running: R:\fpga\xillinix\Vivado\2024.2\bin\unwrapped\win64.o\xelab.exe -timescale 1ps/1ps -debug typical -L unisims_ver -L unimacro_ver -L secureip -L simprims_ver hello_tb glbl -s hello_top_time 
 Multi-threading is on. Using 10 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
-WARNING: [VRFC 10-3129] assignment to input 'rst_n' [R:/fpga/fpga-power-test-accel/build/timesim/hello_top_timesim.v:107]
+WARNING: [VRFC 10-3129] assignment to input 'rst_n' [R:/fpga/fpga-power-test-accel/build/timesim/hello_top_funcsim.v:105]
 Completed static elaboration
-ERROR: [XSIM 43-3230] Could not open sdf file "hello_top_timesim.sdf".
-ERROR: [XSIM 43-3915] Encountered a fatal error. Cannot continue. Exiting... 
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module unisims_ver.PULLUP
+Compiling module unisims_ver.BUFG
+Compiling module unisims_ver.IBUF
+Compiling module unisims_ver.x_lut1_mux2
+Compiling module unisims_ver.LUT1
+Compiling module unisims_ver.FDRE_default
+Compiling module unisims_ver.CARRY4
+Compiling module unisims_ver.OBUF
+Compiling module work.hello_top
+Compiling module work.hello_tb
+Compiling module work.glbl
+Built simulation snapshot hello_top_time

@@ -3,7 +3,7 @@ Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanc
 | Tool Version     : Vivado v.2024.2 (win64) Build 5239630 Fri Nov 08 22:35:27 MST 2024
 | Date             : Wed Oct 22 13:09:15 2025
 | Host             : DESKTOP-VAD40IB running 64-bit major release  (build 9200)
-| Command          : report_power -file R:/fpga/fpga-power-test-accel/reports/hello_top_power_saif.rpt
+| Command          : report_power -file R:/fpga/fpga-power-test-accel/reports/hello_top_power_summary.rpt
 | Design           : hello_top
 | Device           : xc7a35tcpg236-1
 | Design State     : routed

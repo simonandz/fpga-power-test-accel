@@ -477,3 +477,5 @@ module glbl ();
 
 endmodule
 `endif
+
+//check signals
