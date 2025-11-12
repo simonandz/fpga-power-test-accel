@@ -1,7 +1,12 @@
 // 8-way Parallel MAC Array
 // Performs 8 multiply-accumulate operations in parallel
 // Used by MLP, CNN, and RNN accelerators
-// INT8 inputs/weights -> INT16 products
+//
+// Format: Signed INT8 throughout
+// - Inputs: signed 8-bit integers (-128 to +127)
+// - Weights: signed 8-bit integers (-128 to +127)
+// - Products: signed 16-bit integers (-32768 to +32767)
+// - Partial sum: signed 16-bit integer (sum of 8 products)
 
 `timescale 1ns / 1ps
 

@@ -1,10 +1,13 @@
 // MLP Compute Datapath
 // Integrates MAC array and activation unit
-// Performs: accumulate(MAC(inputs, weights)) + bias -> ReLU
+// Performs: accumulate(MAC(inputs, weights)) + bias -> activation
+//
+// Format: Signed INT8/INT16 throughout
+// - Inputs/weights/bias: signed 8-bit integers (-128 to +127)
+// - Accumulator: signed 16-bit integer (-32768 to +32767)
+// - Output: signed 8-bit integer after activation
 
 `timescale 1ns / 1ps
-
-import fixed_point_pkg::*;
 
 module mlp_compute_datapath (
     input  logic         clk,
@@ -17,17 +20,17 @@ module mlp_compute_datapath (
     input  logic [1:0]   activation_type,
 
     // Data inputs (8-way parallel)
-    input  logic [7:0]   data_in[0:7],
-    input  logic [7:0]   weight_in[0:7],
-    input  logic signed [7:0] bias_in,
+    input  logic signed [7:0]   data_in[0:7],
+    input  logic signed [7:0]   weight_in[0:7],
+    input  logic signed [7:0]   bias_in,
 
     // Data outputs
-    output logic [7:0]   result_out,
-    output logic         result_valid,
+    output logic signed [7:0]   result_out,
+    output logic                result_valid,
 
     // Status outputs
-    output logic signed [15:0] accumulator,
-    output logic         mac_valid
+    output logic signed [15:0]  accumulator,
+    output logic                mac_valid
 );
 
     // MAC Array signals
@@ -37,7 +40,7 @@ module mlp_compute_datapath (
 
     // Activation signals
     logic signed [15:0] activation_in;
-    logic [7:0]         activation_out;
+    logic signed [7:0]  activation_out;
     logic               activation_valid;
 
     // Accumulator
@@ -80,9 +83,9 @@ module mlp_compute_datapath (
         .valid(activation_valid)
     );
 
-    // Connect accumulator + bias to activation input
+    // Add bias to accumulator (simple INT16 addition)
     always_comb begin
-        activation_in = add_bias_q44(acc_reg, bias_in);
+        activation_in = acc_reg + $signed(bias_in);
     end
 
     // Output assignments

@@ -1,12 +1,12 @@
 // MLP Accelerator - Refactored with Shared Modules
-// Fully-connected layer compute: y = ReLU(W·x + b)
-// INT8 inputs/weights, INT16 accumulators, INT8 outputs (Q4.4)
+// Fully-connected layer compute: y = activation(W·x + b)
+// Format: Signed INT8/INT16 throughout
+// - INT8 inputs/weights/bias: -128 to +127
+// - INT16 accumulator: -32768 to +32767
+// - INT8 outputs after activation: -128 to +127
 // Uses shared MAC array and activation modules
 
 `timescale 1ns / 1ps
-
-// Import fixed-point utilities
-import fixed_point_pkg::*;
 
 module mlp_core_refactored (
     // Clock and reset
@@ -233,8 +233,8 @@ module mlp_core_refactored (
                 end
 
                 ACTIVATE: begin
-                    // Add bias and activate
-                    activation_in <= add_bias_q44(acc_reg, bias_reg);
+                    // Add bias and activate (simple INT16 addition)
+                    activation_in <= acc_reg + $signed(bias_reg);
                     activation_type <= 2'b00;  // ReLU
                     activation_enable <= 1'b1;
                 end

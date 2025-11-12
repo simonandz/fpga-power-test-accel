@@ -166,21 +166,15 @@ puts "\n###################################"
 puts "# TESTING COMMON/SHARED MODULES"
 puts "###################################\n"
 
-# Test 1: fixed_point_pkg
-run_test "fixed_point_pkg" \
-    [list "$common_rtl/fixed_point_pkg.sv"] \
-    "$common_tb/tb_fixed_point_pkg.sv" \
-    "$common_results"
-
-# Test 2: mac_array_8x
+# Test 1: mac_array_8x
 run_test "mac_array_8x" \
     [list "$common_rtl/mac_array_8x.sv"] \
     "$common_tb/tb_mac_array_8x.sv" \
     "$common_results"
 
-# Test 3: activation_unit (requires fixed_point_pkg)
+# Test 2: activation_unit
 run_test "activation_unit" \
-    [list "$common_rtl/fixed_point_pkg.sv" "$common_rtl/activation_unit.sv"] \
+    [list "$common_rtl/activation_unit.sv"] \
     "$common_tb/tb_activation_unit.sv" \
     "$common_results"
 
@@ -198,19 +192,17 @@ run_test "mlp_memory_subsystem" \
     "$mlp_tb/tb_mlp_memory_subsystem.sv" \
     "$mlp_results"
 
-# Test 5: mlp_compute_datapath
+# Test 4: mlp_compute_datapath
 run_test "mlp_compute_datapath" \
-    [list "$common_rtl/fixed_point_pkg.sv" \
-          "$common_rtl/mac_array_8x.sv" \
+    [list "$common_rtl/mac_array_8x.sv" \
           "$common_rtl/activation_unit.sv" \
           "$mlp_rtl/mlp_compute_datapath.sv"] \
     "$mlp_tb/tb_mlp_compute_datapath.sv" \
     "$mlp_results"
 
-# Test 6: mlp_top (integration - requires all modules)
+# Test 5: mlp_top (integration - requires all modules)
 run_test "mlp_top" \
-    [list "$common_rtl/fixed_point_pkg.sv" \
-          "$common_rtl/mac_array_8x.sv" \
+    [list "$common_rtl/mac_array_8x.sv" \
           "$common_rtl/activation_unit.sv" \
           "$mlp_rtl/mlp_memory_subsystem.sv" \
           "$mlp_rtl/mlp_compute_datapath.sv" \

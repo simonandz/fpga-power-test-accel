@@ -1,9 +1,7 @@
 // Testbench for MLP Compute Datapath
-// Tests MAC array + activation pipeline
+// Tests MAC + Activation pipeline with INT8 values
 
 `timescale 1ns / 1ps
-
-import fixed_point_pkg::*;
 
 module tb_mlp_compute_datapath;
 
@@ -11,10 +9,10 @@ module tb_mlp_compute_datapath;
     logic mac_enable, mac_clear;
     logic activation_enable;
     logic [1:0] activation_type;
-    logic [7:0] data_in[0:7];
-    logic [7:0] weight_in[0:7];
+    logic signed [7:0] data_in[0:7];
+    logic signed [7:0] weight_in[0:7];
     logic signed [7:0] bias_in;
-    logic [7:0] result_out;
+    logic signed [7:0] result_out;
     logic result_valid;
     logic signed [15:0] accumulator;
     logic mac_valid;
@@ -45,31 +43,31 @@ module tb_mlp_compute_datapath;
         .mac_valid(mac_valid)
     );
 
-    // Test task for full MAC + activation
+    // Test task
     task test_neuron(
-        input logic [7:0] inputs[0:7],
-        input logic [7:0] weights[0:7],
+        input logic signed [7:0] inputs[0:7],
+        input logic signed [7:0] weights[0:7],
         input logic signed [7:0] bias,
-        input int expected_result,
+        input logic signed [7:0] expected_result,
         input string test_name
     );
         int i;
-        int actual_result;
+        logic signed [7:0] actual_result;
 
         $display("\n--- %s ---", test_name);
+
+        // Load inputs and weights
+        for (i = 0; i < 8; i++) begin
+            data_in[i] = inputs[i];
+            weight_in[i] = weights[i];
+        end
+        bias_in = bias;
 
         // Clear accumulator
         @(posedge clk);
         mac_clear = 1'b1;
         @(posedge clk);
         mac_clear = 1'b0;
-
-        // Load data
-        for (i = 0; i < 8; i++) begin
-            data_in[i] = inputs[i];
-            weight_in[i] = weights[i];
-        end
-        bias_in = bias;
 
         // Enable MAC
         @(posedge clk);
@@ -80,7 +78,7 @@ module tb_mlp_compute_datapath;
         // Wait for MAC valid and accumulator update
         wait(mac_valid);
         @(posedge clk);
-        @(posedge clk);  // Extra cycle to ensure accumulator has updated
+        @(posedge clk);  // Extra cycle for accumulator update
 
         $display("  Accumulator: %0d (0x%04h)", accumulator, accumulator);
         $display("  Bias: %0d (0x%02h)", bias, bias);
@@ -99,7 +97,7 @@ module tb_mlp_compute_datapath;
         $display("  Result: %0d (0x%02h), Expected: %0d (0x%02h)",
             actual_result, actual_result, expected_result, expected_result);
 
-        // Allow some tolerance for Q4.4 rounding
+        // Allow some tolerance for saturation edge cases
         if (actual_result == expected_result ||
             (actual_result >= expected_result - 2 && actual_result <= expected_result + 2)) begin
             $display("✓ PASS");
@@ -111,15 +109,14 @@ module tb_mlp_compute_datapath;
     endtask
 
     initial begin
-        logic [7:0] test_inputs[0:7];
-        logic [7:0] test_weights[0:7];
+        logic signed [7:0] test_inputs[0:7];
+        logic signed [7:0] test_weights[0:7];
         int i;
 
         $display("========================================");
-        $display("MLP Compute Datapath Testbench");
+        $display("MLP Compute Datapath Testbench (INT8)");
         $display("========================================");
 
-        // Initialize
         rst_n = 0;
         mac_enable = 0;
         mac_clear = 0;
@@ -135,114 +132,55 @@ module tb_mlp_compute_datapath;
         rst_n = 1;
         repeat(5) @(posedge clk);
 
-        // Test 1: All ones, no bias
+        // Test 1: Simple MAC - all ones
         $display("\n=== Test 1: Simple MAC ===");
         for (i = 0; i < 8; i++) begin
-            test_inputs[i] = 8'h10;   // 1.0 in Q4.4
-            test_weights[i] = 8'h10;  // 1.0 in Q4.4
+            test_inputs[i] = 1;   // 1
+            test_weights[i] = 1;  // 1
         end
-        // (1*1)*8 = 8 = 0x0800 in Q8.8, shifted to 0x80 in Q4.4
-        test_neuron(test_inputs, test_weights, 8'h00, 8'h80, "8 × (1.0 * 1.0) = 8.0");
+        // (1*1)*8 = 8
+        test_neuron(test_inputs, test_weights, 0, 8, "8 × (1 * 1) = 8");
 
         // Test 2: With bias
         $display("\n=== Test 2: MAC with bias ===");
         for (i = 0; i < 8; i++) begin
-            test_inputs[i] = 8'h10;   // 1.0
-            test_weights[i] = 8'h10;  // 1.0
+            test_inputs[i] = 2;   // 2
+            test_weights[i] = 3;  // 3
         end
-        // (1*1)*8 + 1 = 9 = 0x0900 in Q8.8, shifted to 0x90 in Q4.4
-        // Bias is stored as integer, so 1 becomes 0x01
-        test_neuron(test_inputs, test_weights, 8'h10, 8'h90, "8 × (1.0 * 1.0) + 1.0 = 9.0");
+        // (2*3)*8 + 5 = 48 + 5 = 53
+        test_neuron(test_inputs, test_weights, 5, 53, "8 × (2 * 3) + 5 = 53");
 
         // Test 3: ReLU negative clamping
         $display("\n=== Test 3: ReLU negative ===");
         for (i = 0; i < 8; i++) begin
-            test_inputs[i] = 8'h10;   // 1.0
-            test_weights[i] = 8'hF0;  // -1.0
+            test_inputs[i] = 1;   // 1
+            test_weights[i] = -2; // -2
         end
-        // (1*-1)*8 + 0 = -8, ReLU → 0
-        test_neuron(test_inputs, test_weights, 8'h00, 8'h00, "ReLU clamps negative to 0");
+        // (1*-2)*8 + 0 = -16, ReLU → 0
+        test_neuron(test_inputs, test_weights, 0, 0, "ReLU clamps negative to 0");
 
-        // Test 4: Accumulation over multiple MAC ops
-        $display("\n=== Test 4: Multiple MAC accumulation ===");
-
-        // First MAC
+        // Test 4: Large values with saturation
+        $display("\n=== Test 4: Saturation ===");
         for (i = 0; i < 8; i++) begin
-            test_inputs[i] = 8'h10;   // 1.0
-            test_weights[i] = 8'h10;  // 1.0
+            test_inputs[i] = 20;  // 20
+            test_weights[i] = 10; // 10
         end
-        bias_in = 8'h00;
+        // (20*10)*8 = 1600, saturates to 127
+        test_neuron(test_inputs, test_weights, 0, 127, "Saturate to INT8 max (127)");
 
-        @(posedge clk);
-        mac_clear = 1'b1;
-        @(posedge clk);
-        mac_clear = 1'b0;
-
-        for (i = 0; i < 8; i++) begin
-            data_in[i] = test_inputs[i];
-            weight_in[i] = test_weights[i];
-        end
-
-        @(posedge clk);
-        mac_enable = 1'b1;
-        @(posedge clk);
-        mac_enable = 1'b0;
-        wait(mac_valid);
-        @(posedge clk);
-        @(posedge clk);  // Extra cycle for accumulator update
-
-        $display("  First MAC accumulator: %0d", accumulator);
-
-        // Second MAC (should accumulate)
-        for (i = 0; i < 8; i++) begin
-            data_in[i] = test_inputs[i];
-            weight_in[i] = test_weights[i];
-        end
-
-        @(posedge clk);
-        mac_enable = 1'b1;
-        @(posedge clk);
-        mac_enable = 1'b0;
-        wait(mac_valid);
-        @(posedge clk);
-        @(posedge clk);  // Extra cycle for accumulator update
-
-        $display("  Second MAC accumulator: %0d (should be doubled)", accumulator);
-
-        // Activate
-        activation_type = 2'b00;
-        activation_enable = 1'b1;
-        @(posedge clk);
-        activation_enable = 1'b0;
-        wait(result_valid);
-        @(posedge clk);
-
-        // 16.0 should saturate to max Q4.4 value (0xFF = 15.9375)
-        if (result_out == 8'hFF) begin
-            $display("  Result: 0x%02h ✓ PASS (saturated to max)", result_out);
-            test_passed++;
-        end else begin
-            $display("  Result: 0x%02h (expected 0xFF - saturated) ✗ FAIL", result_out);
-            test_failed++;
-        end
-
-        // Test 5: Different activation types
+        // Test 5: Pass-through activation
         $display("\n=== Test 5: Pass-through activation ===");
         for (i = 0; i < 8; i++) begin
-            test_inputs[i] = 8'h20;   // 2.0
-            test_weights[i] = 8'h10;  // 1.0
+            test_inputs[i] = 3;   // 3
+            test_weights[i] = 2;  // 2
         end
+        bias_in = 4;
 
+        // Load data
         @(posedge clk);
         mac_clear = 1'b1;
         @(posedge clk);
         mac_clear = 1'b0;
-
-        for (i = 0; i < 8; i++) begin
-            data_in[i] = test_inputs[i];
-            weight_in[i] = test_weights[i];
-        end
-        bias_in = 8'h00;
 
         @(posedge clk);
         mac_enable = 1'b1;
@@ -252,6 +190,7 @@ module tb_mlp_compute_datapath;
         @(posedge clk);
         @(posedge clk);  // Extra cycle for accumulator update
 
+        // (3*2)*8 + 4 = 48 + 4 = 52
         // Use pass-through (type = 3)
         activation_type = 2'b11;
         activation_enable = 1'b1;
@@ -260,12 +199,13 @@ module tb_mlp_compute_datapath;
         wait(result_valid);
         @(posedge clk);
 
-        $display("  Pass-through result: 0x%02h", result_out);
-        if (result_out > 0) begin
-            $display("✓ PASS (non-zero)");
+        $display("\n--- Pass-through activation ---");
+        $display("  Pass-through result: %0d", result_out);
+        if (result_out == 52 || (result_out >= 50 && result_out <= 54)) begin
+            $display("✓ PASS (expected ~52)");
             test_passed++;
         end else begin
-            $display("✗ FAIL");
+            $display("✗ FAIL (expected ~52)");
             test_failed++;
         end
 

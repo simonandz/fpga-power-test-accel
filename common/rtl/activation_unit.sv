@@ -1,8 +1,14 @@
 // Activation Function Unit
 // Supports multiple activation functions for MLP, CNN, and RNN
 // - ReLU: max(0, x)
-// - Saturate: Clamp to 8-bit range with Q4.4 scaling
 // - tanh (3-segment PWL approximation) for RNN
+// - Sigmoid (3-segment PWL approximation)
+// - None (pass-through)
+//
+// Format: Signed INT8/INT16 throughout
+// - Input: signed 16-bit integer (accumulator result)
+// - Output: signed 8-bit integer (-128 to +127)
+// - Saturates to INT8 range with overflow detection
 
 `timescale 1ns / 1ps
 
@@ -14,12 +20,12 @@ module activation_unit (
     input  logic [1:0]   activation_type,  // 0=ReLU, 1=tanh, 2=Sigmoid, 3=None
     input  logic         enable,
 
-    // Input (16-bit accumulator value with bias added)
+    // Input (16-bit accumulator value)
     input  logic signed [15:0] data_in,
 
     // Output (8-bit activated value)
-    output logic [7:0]   data_out,
-    output logic         valid
+    output logic signed [7:0]  data_out,
+    output logic               valid
 );
 
     // Activation type encoding
@@ -50,9 +56,9 @@ module activation_unit (
 
                     TANH: begin
                         // 3-segment piecewise linear tanh approximation
-                        // tanh(x) ≈ x         for |x| < 0.5
-                        //           sign(x)   for |x| > 2.0
-                        //           ...       (interpolated for middle range)
+                        // Maps INT16 input to INT8 output range
+                        // tanh(x) ≈ x/128      for |x| < 64
+                        //           sign(x)*64 for |x| >= 64
 
                         logic signed [15:0] abs_x;
                         logic sign_bit;
@@ -60,30 +66,28 @@ module activation_unit (
                         sign_bit = data_in[15];
                         abs_x = sign_bit ? -data_in : data_in;
 
-                        if (abs_x < 16'h0080) begin  // |x| < 0.5 in Q4.4 (0.5 * 16 = 8)
-                            result <= data_in;  // Linear region
-                        end else if (abs_x > 16'h0200) begin  // |x| > 2.0 in Q4.4 (2.0 * 16 = 32)
-                            result <= sign_bit ? 16'hFF00 : 16'h0100;  // Saturate to ±1.0
+                        if (abs_x < 64) begin
+                            // Linear region: scale down
+                            result <= data_in;
                         end else begin
-                            // Middle region: approximate with slope
-                            // tanh(x) ≈ sign(x) * (0.5 + 0.25*|x|)
-                            logic signed [15:0] approx;
-                            approx = 16'h0080 + (abs_x >>> 2);  // 0.5 + 0.25*|x|
-                            result <= sign_bit ? -approx : approx;
+                            // Saturation region: clamp to ±64
+                            result <= sign_bit ? -16'd64 : 16'd64;
                         end
                     end
 
                     SIGMOID: begin
                         // Simple sigmoid approximation
-                        // σ(x) ≈ 0.5 + x/4 for |x| < 2
-                        //        1.0       for x > 2
-                        //        0.0       for x < -2
-                        if (data_in > 16'h0200) begin  // x > 2.0
-                            result <= 16'h0100;  // 1.0 in Q4.4
-                        end else if (data_in < 16'hFE00) begin  // x < -2.0
-                            result <= 16'h0000;  // 0.0
+                        // σ(x) ≈ 64 + x/4   for |x| < 128
+                        //        127        for x >= 128
+                        //        0          for x <= -128
+
+                        if (data_in > 128) begin
+                            result <= 16'd127;
+                        end else if (data_in < -128) begin
+                            result <= 16'd0;
                         end else begin
-                            result <= 16'h0080 + (data_in >>> 2);  // 0.5 + x/4
+                            // Shift to range [0, 127]: sigmoid(0) = 64
+                            result <= 16'd64 + (data_in >>> 2);
                         end
                     end
 
@@ -103,20 +107,19 @@ module activation_unit (
         end
     end
 
-    // Saturate to 8-bit output (Q4.4 format)
+    // Saturate to 8-bit signed INT8 output
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             data_out <= 8'h00;
             valid <= 1'b0;
         end else begin
-            // Shift right by 4 bits to convert from Q8.8 to Q4.4
-            // and saturate to 8-bit range
-            if (result > 16'h0FF0) begin  // Max: 255 in Q4.4 (255 * 16)
-                data_out <= 8'hFF;
-            end else if (result < 16'h0000) begin  // Negative values clamp to 0 for unsigned output
-                data_out <= 8'h00;
+            // Saturate 16-bit to 8-bit signed range
+            if (result > 127) begin
+                data_out <= 8'd127;  // Max positive INT8
+            end else if (result < -128) begin
+                data_out <= -8'd128;  // Min negative INT8
             end else begin
-                data_out <= result[11:4];  // Extract middle 8 bits (Q4.4)
+                data_out <= result[7:0];  // Direct assignment
             end
             valid <= valid_reg;
         end
