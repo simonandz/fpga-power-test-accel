@@ -14,7 +14,8 @@
       "Bash(/r/fpga/xillinix/Vivado/2024.2/bin/xsim:*)",
       "Bash(chmod:*)",
       "Bash(bash:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(/r/fpga/xillinix/Vivado/2024.2/bin/vivado:*)"
     ],
     "deny": [],
     "ask": []
