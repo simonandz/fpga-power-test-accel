@@ -15,7 +15,9 @@
       "Bash(chmod:*)",
       "Bash(bash:*)",
       "Bash(rm:*)",
-      "Bash(/r/fpga/xillinix/Vivado/2024.2/bin/vivado:*)"
+      "Bash(/r/fpga/xillinix/Vivado/2024.2/bin/vivado:*)",
+      "Bash(timeout 30 /r/icarus_verilog/iverilog/iverilog/bin/vvp:*)",
+      "Bash(cmd /c \"where iverilog 2>nul || where xvlog 2>nul || echo No simulator found\")"
     ],
     "deny": [],
     "ask": []

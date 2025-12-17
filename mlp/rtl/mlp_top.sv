@@ -183,6 +183,7 @@ module mlp_top (
     //==========================================================================
 
     // Load data from memory into datapath when signaled by controller
+    // Handles 1-cycle BRAM read latency properly
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             for (int i = 0; i < 8; i++) begin
@@ -192,17 +193,14 @@ module mlp_top (
             datapath_bias_in <= 8'h00;
         end else begin
             if (ctrl_load_inputs_weights) begin
-                // Load 8 parallel inputs and weights from memory
-                // Memory addresses are already set by controller
-                for (int i = 0; i < 8; i++) begin
-                    // Note: In real implementation, you'd need to handle
-                    // the memory read latency properly. This is simplified.
-                    datapath_data_in[i] <= mem_input_rd_data;
-                    datapath_weight_in[i] <= mem_weight_rd_data;
-                end
+                // Sequential loading: load one element at a time
+                // ctrl_load_offset indicates which of the 8 elements to load
+                // BRAM has 1-cycle latency, so data is available this cycle
+                datapath_data_in[ctrl_load_offset] <= mem_input_rd_data;
+                datapath_weight_in[ctrl_load_offset] <= mem_weight_rd_data;
             end
 
-            // Load bias for current neuron
+            // Load bias for current neuron (loaded once per neuron)
             datapath_bias_in <= $signed(mem_bias_rd_data);
         end
     end

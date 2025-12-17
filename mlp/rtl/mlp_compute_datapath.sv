@@ -46,6 +46,10 @@ module mlp_compute_datapath (
     // Accumulator
     logic signed [15:0] acc_reg;
 
+    // Pipeline register for bias addition
+    logic signed [15:0] acc_plus_bias_reg;
+    logic               acc_plus_bias_valid;
+
     // MAC Array instance
     mac_array_8x mac_inst (
         .clk(clk),
@@ -72,21 +76,38 @@ module mlp_compute_datapath (
         end
     end
 
+    // Pipeline register for bias addition (prevents race condition)
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            acc_plus_bias_reg <= 16'h0000;
+            acc_plus_bias_valid <= 1'b0;
+        end else begin
+            if (mac_clear) begin
+                acc_plus_bias_reg <= 16'h0000;
+                acc_plus_bias_valid <= 1'b0;
+            end else if (activation_enable) begin
+                // Register the bias-added value when activation is requested
+                acc_plus_bias_reg <= acc_reg + $signed(bias_in);
+                acc_plus_bias_valid <= 1'b1;
+            end else begin
+                acc_plus_bias_valid <= 1'b0;
+            end
+        end
+    end
+
     // Activation Unit instance
     activation_unit activation_inst (
         .clk(clk),
         .rst_n(rst_n),
         .activation_type(activation_type),
-        .enable(activation_enable),
+        .enable(acc_plus_bias_valid),  // Use registered valid signal
         .data_in(activation_in),
         .data_out(activation_out),
         .valid(activation_valid)
     );
 
-    // Add bias to accumulator (simple INT16 addition)
-    always_comb begin
-        activation_in = acc_reg + $signed(bias_in);
-    end
+    // Connect registered bias-added value to activation unit
+    assign activation_in = acc_plus_bias_reg;
 
     // Output assignments
     assign accumulator = acc_reg;

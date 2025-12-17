@@ -37,6 +37,10 @@ module activation_unit (
     logic signed [15:0] result;
     logic               valid_reg;
 
+    // Variables for tanh calculation
+    logic signed [15:0] abs_x;
+    logic               sign_bit;
+
     // Activation function logic
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -60,15 +64,12 @@ module activation_unit (
                         // tanh(x) ≈ x/128      for |x| < 64
                         //           sign(x)*64 for |x| >= 64
 
-                        logic signed [15:0] abs_x;
-                        logic sign_bit;
-
                         sign_bit = data_in[15];
                         abs_x = sign_bit ? -data_in : data_in;
 
                         if (abs_x < 64) begin
-                            // Linear region: scale down
-                            result <= data_in;
+                            // Linear region: scale down by 128
+                            result <= data_in >>> 7;  // Divide by 128
                         end else begin
                             // Saturation region: clamp to ±64
                             result <= sign_bit ? -16'd64 : 16'd64;
@@ -87,7 +88,7 @@ module activation_unit (
                             result <= 16'd0;
                         end else begin
                             // Shift to range [0, 127]: sigmoid(0) = 64
-                            result <= 16'd64 + (data_in >>> 2);
+                            result <= $signed(16'd64) + (data_in >>> 2);
                         end
                     end
 

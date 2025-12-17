@@ -62,6 +62,8 @@ module mlp_controller (
     logic [15:0] neuron_idx;
     logic [15:0] weight_base_addr;
     logic [2:0]  mac_count;
+    logic [3:0]  load_counter;  // Counter for sequential BRAM reads (0-9)
+    logic        activation_triggered;  // Flag to track if activation was triggered
 
     // FSM state register
     always_ff @(posedge clk or negedge rst_n) begin
@@ -82,11 +84,19 @@ module mlp_controller (
             end
 
             LOAD_DATA: begin
-                next_state = COMPUTE;
+                // Need 10 cycles total:
+                // Cycle 0: Issue addr[0]
+                // Cycles 1-8: Data arrives, issue next addr, store data
+                // Cycle 9: Final data arrives and stores
+                if (load_counter >= 10) begin
+                    next_state = COMPUTE;
+                end
             end
 
             COMPUTE: begin
-                if (input_idx >= num_inputs) begin
+                // Check if we'll have processed all inputs after this batch
+                // input_idx will be incremented by 8 in the COMPUTE state action
+                if (input_idx + 16'h0008 >= num_inputs) begin
                     // Wait for final MAC to complete
                     if (mac_valid) next_state = ACTIVATE;
                 end else begin
@@ -133,6 +143,8 @@ module mlp_controller (
             output_wr_en <= 1'b0;
             load_inputs_weights <= 1'b0;
             load_offset <= 3'h0;
+            load_counter <= 4'h0;
+            activation_triggered <= 1'b0;
         end else begin
             // Default values
             mac_enable <= 1'b0;
@@ -158,41 +170,68 @@ module mlp_controller (
                     input_idx <= 16'h0000;
                     mac_clear <= 1'b1;  // Clear accumulator
                     mac_count <= 3'h0;
+                    load_counter <= 4'h0;  // Reset load counter
                 end
 
                 LOAD_DATA: begin
-                    // Prepare to load 8 inputs and 8 weights
-                    load_inputs_weights <= 1'b1;
-                    load_offset <= mac_count;
+                    // Sequential BRAM reads with proper latency handling
+                    // Cycle 0 (counter=0): Issue addr[0], increment to addr[1]
+                    // Cycle 1 (counter=1): Data[0] ready from BRAM, store it, issue addr[2]
+                    // Cycle 2 (counter=2): Data[1] ready, store it, issue addr[3]
+                    // ...
+                    // Cycle 8 (counter=8): Data[7] ready, store it
+                    // Cycle 9 (counter=9): All data loaded, ready for COMPUTE
+
+                    if (load_counter >= 1 && load_counter <= 8) begin
+                        // Store data that became available from previous cycle's read
+                        load_inputs_weights <= 1'b1;
+                        load_offset <= load_counter[2:0] - 3'h1;
+                    end else begin
+                        load_inputs_weights <= 1'b0;
+                    end
+
+                    // Issue read addresses (increment for next element)
+                    // Stop incrementing after we've issued all 8 reads
+                    if (load_counter < 8) begin
+                        addr_in <= addr_in + 16'h0001;
+                        addr_wt <= addr_wt + 16'h0001;
+                    end
+
+                    load_counter <= load_counter + 1;
                 end
 
                 COMPUTE: begin
                     // Enable MAC for current batch
                     mac_enable <= 1'b1;
 
-                    // Update addresses and indices
-                    addr_in <= addr_in + 16'h0008;
-                    addr_wt <= addr_wt + 16'h0008;
+                    // Update indices (addresses already updated during LOAD_DATA)
                     input_idx <= input_idx + 16'h0008;
                     mac_count <= mac_count + 1;
+
+                    // Reset load counter for next batch (if needed)
+                    load_counter <= 4'h0;
                 end
 
                 ACTIVATE: begin
-                    // Trigger activation (ReLU)
-                    activation_enable <= 1'b1;
-                    activation_type <= 2'b00;  // ReLU
+                    // Trigger activation (ReLU) - but only once!
+                    if (!activation_triggered) begin
+                        activation_enable <= 1'b1;
+                        activation_type <= 2'b00;  // ReLU
+                        activation_triggered <= 1'b1;
+                    end
                 end
 
                 STORE_OUTPUT: begin
-                    if (result_valid) begin
-                        // Write result to output BRAM
-                        output_wr_en <= 1'b1;
-                        addr_out <= addr_out + 16'h0001;
+                    // Write result to output BRAM (result_valid should be high when we enter this state)
+                    output_wr_en <= 1'b1;
+                    addr_out <= addr_out + 16'h0001;
 
-                        // Move to next neuron
-                        neuron_idx <= neuron_idx + 16'h0001;
-                        weight_base_addr <= weight_base_addr + num_inputs;
-                    end
+                    // Move to next neuron
+                    neuron_idx <= neuron_idx + 16'h0001;
+                    weight_base_addr <= weight_base_addr + num_inputs;
+
+                    // Clear activation flag for next neuron
+                    activation_triggered <= 1'b0;
                 end
 
                 DONE_STATE: begin
