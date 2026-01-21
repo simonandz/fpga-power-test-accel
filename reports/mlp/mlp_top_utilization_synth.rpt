@@ -1,0 +1,35 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2024.2 (win64) Build 5239630 Fri Nov 08 22:35:27 MST 2024
+| Date         : Wed Dec 17 14:08:14 2025
+| Host         : DESKTOP-VAD40IB running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file R:/fpga/fpga-power-test-accel/reports/mlp/mlp_top_utilization_synth.rpt
+| Design       : mlp_top
+| Device       : xc7a35tcpg236-1
+| Speed File   : -1
+| Design State : Synthesized
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++---------------------+----------------------+------------+------------+---------+------+-----+--------+--------+------------+
+|       Instance      |        Module        | Total LUTs | Logic LUTs | LUTRAMs | SRLs | FFs | RAMB36 | RAMB18 | DSP Blocks |
++---------------------+----------------------+------------+------------+---------+------+-----+--------+--------+------------+
+| mlp_top             |                (top) |        804 |        804 |       0 |    0 | 532 |      5 |      1 |          0 |
+|   (mlp_top)         |                (top) |          0 |          0 |       0 |    0 | 136 |      0 |      0 |          0 |
+|   controller_inst   |       mlp_controller |        173 |        173 |       0 |    0 |  93 |      0 |      0 |          0 |
+|   datapath_inst     | mlp_compute_datapath |        631 |        631 |       0 |    0 | 303 |      0 |      0 |          0 |
+|     (datapath_inst) | mlp_compute_datapath |          0 |          0 |       0 |    0 |  33 |      0 |      0 |          0 |
+|     activation_inst |      activation_unit |         22 |         22 |       0 |    0 |  26 |      0 |      0 |          0 |
+|     mac_inst        |         mac_array_8x |        609 |        609 |       0 |    0 | 244 |      0 |      0 |          0 |
+|   memory_inst       | mlp_memory_subsystem |          0 |          0 |       0 |    0 |   0 |      5 |      1 |          0 |
++---------------------+----------------------+------------+------------+---------+------+-----+--------+--------+------------+
+
+

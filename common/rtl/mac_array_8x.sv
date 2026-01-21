@@ -19,10 +19,10 @@ module mac_array_8x (
     input  logic         clear_acc,     // Clear accumulator
 
     // Input data (8 parallel inputs)
-    input  logic [7:0]   data_in[0:7],
+    input  logic signed [7:0]   data_in[0:7],
 
     // Weights (8 parallel weights)
-    input  logic [7:0]   weight_in[0:7],
+    input  logic signed [7:0]   weight_in[0:7],
 
     // Output
     output logic signed [15:0] mac_out[0:7],    // 8 individual products

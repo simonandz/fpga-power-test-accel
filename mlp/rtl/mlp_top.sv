@@ -5,7 +5,7 @@
 // - Controller (FSM)
 //
 // Fully-connected layer compute: y = ReLU(W·x + b)
-// INT8 inputs/weights, INT16 accumulators, INT8 outputs (Q4.4)
+// INT8 quantized neural network: INT8 inputs/weights, INT16 accumulators, INT8 outputs
 
 `timescale 1ns / 1ps
 
@@ -40,7 +40,12 @@ module mlp_top (
 
     // Output interface
     output logic [7:0]   output_data,
-    output logic         output_valid
+    output logic         output_valid,
+
+    // Debug: Output BRAM write interface (directly exposed for ILA)
+    output logic [15:0]  output_wr_addr,
+    output logic [7:0]   output_wr_data,
+    output logic         output_wr_en
 );
 
     // Memory subsystem signals
@@ -57,8 +62,8 @@ module mlp_top (
     logic [7:0]  mem_output_rd_data;
 
     // Datapath signals
-    logic [7:0]  datapath_data_in[0:7];
-    logic [7:0]  datapath_weight_in[0:7];
+    logic signed [7:0]  datapath_data_in[0:7];
+    logic signed [7:0]  datapath_weight_in[0:7];
     logic signed [7:0] datapath_bias_in;
     logic [7:0]  datapath_result_out;
     logic        datapath_result_valid;
@@ -183,7 +188,8 @@ module mlp_top (
     //==========================================================================
 
     // Load data from memory into datapath when signaled by controller
-    // Handles 1-cycle BRAM read latency properly
+    // Uses registered storage but combinational write to align with BRAM timing
+    // When ctrl_load_inputs_weights is high, store BRAM data at the specified offset
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             for (int i = 0; i < 8; i++) begin
@@ -195,7 +201,7 @@ module mlp_top (
             if (ctrl_load_inputs_weights) begin
                 // Sequential loading: load one element at a time
                 // ctrl_load_offset indicates which of the 8 elements to load
-                // BRAM has 1-cycle latency, so data is available this cycle
+                // The controller ensures this is timed to when BRAM data is valid
                 datapath_data_in[ctrl_load_offset] <= mem_input_rd_data;
                 datapath_weight_in[ctrl_load_offset] <= mem_weight_rd_data;
             end
@@ -213,6 +219,11 @@ module mlp_top (
     assign mem_output_wr_data = datapath_result_out;
     assign output_data = datapath_result_out;
     assign output_valid = datapath_result_valid;
+
+    // Debug: Expose BRAM write signals for ILA observation
+    assign output_wr_addr = mem_output_wr_addr;
+    assign output_wr_data = mem_output_wr_data;
+    assign output_wr_en = mem_output_wr_en;
 
     // Default output read address (can be extended for host readback)
     assign mem_output_rd_addr = 16'h0000;

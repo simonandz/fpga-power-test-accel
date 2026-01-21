@@ -84,11 +84,11 @@ module mlp_controller (
             end
 
             LOAD_DATA: begin
-                // Need 10 cycles total:
-                // Cycle 0: Issue addr[0]
-                // Cycles 1-8: Data arrives, issue next addr, store data
-                // Cycle 9: Final data arrives and stores
-                if (load_counter >= 10) begin
+                // Need 9 cycles (counter 0-8):
+                // Cycle 0: Set up addr 0, set load signal
+                // Cycles 1-8: Store data[0-7] at offsets [0-7]
+                // Exit when counter reaches 9 (after storing data[7])
+                if (load_counter >= 9) begin
                     next_state = COMPUTE;
                 end
             end
@@ -165,6 +165,8 @@ module mlp_controller (
                 INIT_NEURON: begin
                     busy <= 1'b1;
                     // Initialize for new neuron
+                    // Set addresses to 0 (or weight_base for weights)
+                    // These will be presented to BRAM on the FIRST cycle of LOAD_DATA
                     addr_in <= 16'h0000;
                     addr_wt <= weight_base_addr;
                     input_idx <= 16'h0000;
@@ -175,24 +177,44 @@ module mlp_controller (
 
                 LOAD_DATA: begin
                     // Sequential BRAM reads with proper latency handling
-                    // Cycle 0 (counter=0): Issue addr[0], increment to addr[1]
-                    // Cycle 1 (counter=1): Data[0] ready from BRAM, store it, issue addr[2]
-                    // Cycle 2 (counter=2): Data[1] ready, store it, issue addr[3]
+                    //
+                    // Key timing relationships:
+                    // - addr_in is registered, combinationally assigned to input_rd_addr
+                    // - BRAM registered read: addr at START of cycle N → data at END of cycle N
+                    // - mlp_top samples mem_input_rd_data at clock edge when load_inputs_weights=1
+                    // - The sampled data is stored at load_offset index
+                    //
+                    // To store data[0] at offset 0:
+                    // - Need BRAM to output data[0] when load=1 and offset=0 are sampled
+                    // - BRAM outputs data[0] at END of cycle where addr=0 at START
+                    // - load=1/offset=0 set at end of cycle N are sampled at end of cycle N+1
+                    // - So need addr=0 at start of cycle N+1 = addr=0 set at end of cycle N
+                    //
+                    // Timeline (addr_in=0 set at end of INIT_NEURON):
+                    // Cycle 0: addr=0, BRAM gets addr 0, set load=1/offset=0, DON'T inc addr
+                    // Cycle 1: addr=0, BRAM outputs data[0], store data[0]@[0], set offset=1, inc to 1
+                    // Cycle 2: addr=1, BRAM outputs data[1], store data[1]@[1], set offset=2, inc to 2
                     // ...
-                    // Cycle 8 (counter=8): Data[7] ready, store it
-                    // Cycle 9 (counter=9): All data loaded, ready for COMPUTE
+                    // Cycle 7: addr=6, BRAM outputs data[6], store data[6]@[6], set offset=7, inc to 7
+                    // Cycle 8: addr=7, BRAM outputs data[7], store data[7]@[7], clear load
 
-                    if (load_counter >= 1 && load_counter <= 8) begin
-                        // Store data that became available from previous cycle's read
+                    if (load_counter >= 0 && load_counter <= 7) begin
+                        // Set load signal and offset for NEXT cycle's store
                         load_inputs_weights <= 1'b1;
-                        load_offset <= load_counter[2:0] - 3'h1;
+                        load_offset <= load_counter[2:0];
                     end else begin
                         load_inputs_weights <= 1'b0;
                     end
 
-                    // Issue read addresses (increment for next element)
-                    // Stop incrementing after we've issued all 8 reads
-                    if (load_counter < 8) begin
+                    // Increment address starting from cycle 0
+                    // Timeline with BRAM 1-cycle latency:
+                    //   Cycle 0: addr=0, BRAM fetches data[0], set load=1/offset=0, inc addr to 1
+                    //   Cycle 1: addr=1, BRAM outputs data[0], store data[0]@[0], set offset=1, inc to 2
+                    //   Cycle 2: addr=2, BRAM outputs data[1], store data[1]@[1], set offset=2, inc to 3
+                    //   ...
+                    //   Cycle 7: addr=7, BRAM outputs data[6], store data[6]@[6], set offset=7, inc to 8
+                    //   Cycle 8: addr=8, BRAM outputs data[7], store data[7]@[7], clear load
+                    if (load_counter <= 7) begin
                         addr_in <= addr_in + 16'h0001;
                         addr_wt <= addr_wt + 16'h0001;
                     end
@@ -201,12 +223,17 @@ module mlp_controller (
                 end
 
                 COMPUTE: begin
-                    // Enable MAC for current batch
-                    mac_enable <= 1'b1;
+                    // Enable MAC for ONE cycle only (on entry to this state)
+                    // mac_count tracks whether we've already triggered the MAC
+                    if (mac_count == 0) begin
+                        mac_enable <= 1'b1;
+                        mac_count <= 3'h1;  // Mark that MAC has been triggered
+                    end
 
-                    // Update indices (addresses already updated during LOAD_DATA)
-                    input_idx <= input_idx + 16'h0008;
-                    mac_count <= mac_count + 1;
+                    // Update indices only on first cycle
+                    if (mac_count == 0) begin
+                        input_idx <= input_idx + 16'h0008;
+                    end
 
                     // Reset load counter for next batch (if needed)
                     load_counter <= 4'h0;
@@ -224,11 +251,11 @@ module mlp_controller (
                 STORE_OUTPUT: begin
                     // Write result to output BRAM (result_valid should be high when we enter this state)
                     output_wr_en <= 1'b1;
-                    addr_out <= addr_out + 16'h0001;
 
-                    // Move to next neuron
+                    // Move to next neuron (increment AFTER using current values)
                     neuron_idx <= neuron_idx + 16'h0001;
                     weight_base_addr <= weight_base_addr + num_inputs;
+                    addr_out <= addr_out + 16'h0001;  // Increment for next output
 
                     // Clear activation flag for next neuron
                     activation_triggered <= 1'b0;

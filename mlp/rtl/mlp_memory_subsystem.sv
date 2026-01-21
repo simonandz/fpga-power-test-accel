@@ -45,18 +45,39 @@ module mlp_memory_subsystem (
 );
 
     // BRAM arrays (read-first mode for predictable read-during-write behavior)
-    // Synthesis attribute for FPGA tools (ignored by simulators)
-    /* synthesis ram_style = "block" */ logic [7:0] input_bram[0:4095];    // 4K inputs
-    /* synthesis ram_style = "block" */ logic [7:0] weight_bram[0:16383];  // 16K weights
-    /* synthesis ram_style = "block" */ logic [7:0] bias_bram[0:255];      // 256 biases
-    /* synthesis ram_style = "block" */ logic [7:0] output_bram[0:4095];   // 4K outputs
+    // Synthesis attributes for FPGA tools (ignored by simulators)
+    // ram_init_file tells Vivado to initialize BRAM from .mem file during bitstream generation
+    (* ram_style = "block", ram_init_file = "input_data.mem" *)
+    logic [7:0] input_bram[0:4095];    // 4K inputs
 
-    // Initialize BRAMs to zero for simulation (avoid 'x' propagation)
+    (* ram_style = "block", ram_init_file = "weight_data.mem" *)
+    logic [7:0] weight_bram[0:16383];  // 16K weights
+
+    (* ram_style = "block", ram_init_file = "bias_data.mem" *)
+    logic [7:0] bias_bram[0:255];      // 256 biases
+
+    (* ram_style = "block" *)
+    logic [7:0] output_bram[0:4095];   // 4K outputs (no init file)
+
+    // Initialize BRAMs for simulation (avoid 'x' propagation)
+    // In hardware, .mem files are loaded automatically via ram_init_file attribute
     initial begin
+        // Initialize to zero first
         for (int i = 0; i < 4096; i++) input_bram[i] = 8'h00;
         for (int i = 0; i < 16384; i++) weight_bram[i] = 8'h00;
         for (int i = 0; i < 256; i++) bias_bram[i] = 8'h00;
         for (int i = 0; i < 4096; i++) output_bram[i] = 8'h00;
+
+        // For simulation, load from files if available
+        `ifndef SYNTHESIS
+            // Try to load from files (paths relative to simulation directory)
+            if ($test$plusargs("LOAD_MEM")) begin
+                $readmemh("mlp/data/input_data.mem", input_bram);
+                $readmemh("mlp/data/weight_data.mem", weight_bram);
+                $readmemh("mlp/data/bias_data.mem", bias_bram);
+                $display("[BRAM] Loaded memory initialization files");
+            end
+        `endif
     end
 
     // Input BRAM - Dual port (write from host, read from compute)

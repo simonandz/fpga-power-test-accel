@@ -1,0 +1,12 @@
+// Input data for MLP test (INT8 format)
+// 8 values: simple test pattern
+// Address 0-7
+01  // Input 0: 1
+02  // Input 1: 2
+03  // Input 2: 3
+04  // Input 3: 4
+05  // Input 4: 5
+06  // Input 5: 6
+07  // Input 6: 7
+08  // Input 7: 8
+// Remaining addresses filled with zeros

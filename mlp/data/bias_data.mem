@@ -1,0 +1,8 @@
+// Bias data for MLP test (INT8 format)
+// 4 biases, all value=0 for simple testing
+00  // Bias 0
+00  // Bias 1
+00  // Bias 2
+00  // Bias 3
+// With inputs [1,2,3,4,5,6,7,8] and weights all=1:
+// Expected output = 1+2+3+4+5+6+7+8 = 36 (0x24)
