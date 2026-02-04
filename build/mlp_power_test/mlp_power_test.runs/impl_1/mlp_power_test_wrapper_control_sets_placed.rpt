@@ -1,0 +1,104 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2024.2 (win64) Build 5239630 Fri Nov 08 22:35:27 MST 2024
+| Date         : Wed Jan 28 15:22:56 2026
+| Host         : DESKTOP-VAD40IB running 64-bit major release  (build 9200)
+| Command      : report_control_sets -verbose -file mlp_power_test_wrapper_control_sets_placed.rpt
+| Design       : mlp_power_test_wrapper
+| Device       : xc7a35t
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Histogram
+3. Flip-Flop Distribution
+4. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Total control sets                                       |    26 |
+|    Minimum number of control sets                        |    26 |
+|    Addition due to synthesis replication                 |     0 |
+|    Addition due to physical synthesis replication        |     0 |
+| Unused register locations in slices containing registers |    27 |
++----------------------------------------------------------+-------+
+* Control sets can be merged at opt_design using control_set_merge or merge_equivalent_drivers
+** Run report_qor_suggestions for automated merging and remapping suggestions
+
+
+2. Histogram
+------------
+
++--------------------+-------+
+|       Fanout       | Count |
++--------------------+-------+
+| Total control sets |    26 |
+| >= 0 to < 4        |     1 |
+| >= 4 to < 6        |     1 |
+| >= 6 to < 8        |     2 |
+| >= 8 to < 10       |     1 |
+| >= 10 to < 12      |     1 |
+| >= 12 to < 14      |     0 |
+| >= 14 to < 16      |     1 |
+| >= 16              |    19 |
++--------------------+-------+
+* Control sets can be remapped at either synth_design or opt_design
+
+
+3. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |               0 |            0 |
+| No           | No                    | Yes                    |             216 |           63 |
+| No           | Yes                   | No                     |               0 |            0 |
+| Yes          | No                    | No                     |               0 |            0 |
+| Yes          | No                    | Yes                    |             469 |          142 |
+| Yes          | Yes                   | No                     |               0 |            0 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+4. Detailed Control Set Information
+-----------------------------------
+
++----------------+------------------------------------------------------+-----------------------------------------+------------------+----------------+--------------+
+|  Clock Signal  |                     Enable Signal                    |             Set/Reset Signal            | Slice Load Count | Bel Load Count | Bels / Slice |
++----------------+------------------------------------------------------+-----------------------------------------+------------------+----------------+--------------+
+|  clk_IBUF_BUFG | mlp_inst/controller_inst/busy_i_1_n_0                | mlp_inst/controller_inst/done_i_2_n_0   |                1 |              1 |         1.00 |
+|  clk_IBUF_BUFG | mlp_inst/controller_inst/load_counter[3]_i_1_n_0     | mlp_inst/controller_inst/done_i_2_n_0   |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG | mlp_inst/controller_inst/FSM_onehot_state[6]_i_1_n_0 | mlp_inst/controller_inst/done_i_2_n_0   |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | FSM_onehot_state[6]_i_1_n_0                          | FSM_onehot_state[6]_i_2_n_0             |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG |                                                      | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                4 |              8 |         2.00 |
+|  clk_IBUF_BUFG |                                                      | mlp_inst/controller_inst/done_i_2_n_0   |                6 |             11 |         1.83 |
+|  clk_IBUF_BUFG | mlp_inst/controller_inst/input_idx[15]_i_1_n_0       | mlp_inst/controller_inst/done_i_2_n_0   |                4 |             14 |         3.50 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_inst/acc_plus_bias_reg[15]_i_1_n_0 | mlp_inst/datapath_inst/mac_inst/rst_n_0 |                4 |             16 |         4.00 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_inst/acc_plus_bias_valid_reg_n_0   | mlp_inst/datapath_inst/mac_inst/rst_n_0 |                7 |             16 |         2.29 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_inst/mac_inst/mac_clear_reg        | mlp_inst/datapath_inst/mac_inst/rst_n_0 |                4 |             16 |         4.00 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_data_in                            | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                8 |             16 |         2.00 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_data_in[4][7]_i_1_n_0              | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                8 |             16 |         2.00 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_data_in[6][7]_i_1_n_0              | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                7 |             16 |         2.29 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_data_in[7][7]_i_1_n_0              | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                7 |             16 |         2.29 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_data_in[2][7]_i_1_n_0              | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                7 |             16 |         2.29 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_data_in[3][7]_i_1_n_0              | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                7 |             16 |         2.29 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_data_in[1][7]_i_1_n_0              | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                8 |             16 |         2.00 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_data_in[5][7]_i_1_n_0              | mlp_inst/datapath_data_in[0][7]_i_2_n_0 |                8 |             16 |         2.00 |
+|  clk_IBUF_BUFG | input_we                                             | FSM_onehot_state[6]_i_2_n_0             |                8 |             16 |         2.00 |
+|  clk_IBUF_BUFG | inference_count0                                     | FSM_onehot_state[6]_i_2_n_0             |                4 |             16 |         4.00 |
+|  clk_IBUF_BUFG | done_pulse_counter[0]_i_1_n_0                        | FSM_onehot_state[6]_i_2_n_0             |                5 |             20 |         4.00 |
+|  clk_IBUF_BUFG | mlp_inst/controller_inst/addr_in[15]_i_1_n_0         | mlp_inst/controller_inst/done_i_2_n_0   |                5 |             32 |         6.40 |
+|  clk_IBUF_BUFG | mlp_inst/controller_inst/neuron_idx[7]_i_1_n_0       | mlp_inst/controller_inst/done_i_2_n_0   |                9 |             48 |         5.33 |
+|  clk_IBUF_BUFG |                                                      | FSM_onehot_state[6]_i_2_n_0             |               21 |             70 |         3.33 |
+|  clk_IBUF_BUFG |                                                      | mlp_inst/datapath_inst/mac_inst/rst_n_0 |               32 |            127 |         3.97 |
+|  clk_IBUF_BUFG | mlp_inst/datapath_inst/mac_inst/mac_out              | mlp_inst/datapath_inst/mac_inst/rst_n_0 |               25 |            128 |         5.12 |
++----------------+------------------------------------------------------+-----------------------------------------+------------------+----------------+--------------+
+
+

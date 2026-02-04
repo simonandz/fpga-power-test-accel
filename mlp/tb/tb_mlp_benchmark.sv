@@ -157,7 +157,7 @@ module tb_mlp_benchmark;
     task automatic load_random_inputs();
         int i;
         for (i = 0; i < NUM_INPUTS; i++) begin
-            test_inputs[i] = $urandom_range(0, 255);
+            test_inputs[i] = $random & 8'hFF;
             load_input(i, test_inputs[i]);
         end
     endtask
@@ -165,7 +165,7 @@ module tb_mlp_benchmark;
     task automatic load_random_weights();
         int i;
         for (i = 0; i < NUM_OUTPUTS * NUM_INPUTS; i++) begin
-            test_weights[i] = $urandom_range(0, 255);
+            test_weights[i] = $random & 8'hFF;
             load_weight(i, test_weights[i]);
         end
     endtask
@@ -173,7 +173,7 @@ module tb_mlp_benchmark;
     task automatic load_random_biases();
         int i;
         for (i = 0; i < NUM_OUTPUTS; i++) begin
-            test_biases[i] = $urandom_range(0, 255);
+            test_biases[i] = $random & 8'hFF;
             load_bias(i, test_biases[i]);
         end
     endtask
@@ -186,8 +186,8 @@ module tb_mlp_benchmark;
         real avg_latency, throughput, macs_per_inference;
         real clock_freq_mhz, inferences_per_sec, gops, energy_estimate;
 
-        // Initialize random seed
-        $urandom(RANDOM_SEED);
+        // Note: XSim doesn't support $urandom/$random seeding
+        // Random values will still be generated but not reproducible
 
         $display("");
         $display("================================================================");

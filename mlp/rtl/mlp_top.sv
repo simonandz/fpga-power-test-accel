@@ -81,8 +81,11 @@ module mlp_top (
     //==========================================================================
     // Module Instantiations
     //==========================================================================
+    // DONT_TOUCH prevents synthesis optimization from removing these modules
+    // when their outputs aren't fully used. Essential for power measurement.
 
     // Memory Subsystem
+    (* DONT_TOUCH = "TRUE" *)
     mlp_memory_subsystem memory_inst (
         .clk(clk),
         .rst_n(rst_n),
@@ -121,6 +124,7 @@ module mlp_top (
     );
 
     // Compute Datapath
+    (* DONT_TOUCH = "TRUE" *)
     mlp_compute_datapath datapath_inst (
         .clk(clk),
         .rst_n(rst_n),
@@ -146,6 +150,7 @@ module mlp_top (
     );
 
     // Controller
+    (* DONT_TOUCH = "TRUE" *)
     mlp_controller controller_inst (
         .clk(clk),
         .rst_n(rst_n),
