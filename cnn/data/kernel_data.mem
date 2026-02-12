@@ -1,0 +1,11 @@
+// 3x3 edge detection kernel (9 weights, hex INT8)
+// Laplacian: [0, -1, 0; -1, 4, -1; 0, -1, 0]
+00
+FF
+00
+FF
+04
+FF
+00
+FF
+00

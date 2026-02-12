@@ -79,3 +79,4 @@ __pycache__/
 *.tmp
 *.bak
 design_nets_analysis.txt
+claude.md

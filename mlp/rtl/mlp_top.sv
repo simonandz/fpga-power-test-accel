@@ -45,7 +45,10 @@ module mlp_top (
     // Debug: Output BRAM write interface (directly exposed for ILA)
     output logic [15:0]  output_wr_addr,
     output logic [7:0]   output_wr_data,
-    output logic         output_wr_en
+    output logic         output_wr_en,
+
+    // Performance monitoring
+    output logic [2:0]   stage           // Current pipeline stage for perf_counters
 );
 
     // Memory subsystem signals
@@ -77,6 +80,7 @@ module mlp_top (
     logic [1:0]  ctrl_activation_type;
     logic        ctrl_load_inputs_weights;
     logic [2:0]  ctrl_load_offset;
+    logic [2:0]  ctrl_stage;
 
     //==========================================================================
     // Module Instantiations
@@ -185,7 +189,8 @@ module mlp_top (
 
         // Data flow control
         .load_inputs_weights(ctrl_load_inputs_weights),
-        .load_offset(ctrl_load_offset)
+        .load_offset(ctrl_load_offset),
+        .stage(ctrl_stage)
     );
 
     //==========================================================================
@@ -229,6 +234,9 @@ module mlp_top (
     assign output_wr_addr = mem_output_wr_addr;
     assign output_wr_data = mem_output_wr_data;
     assign output_wr_en = mem_output_wr_en;
+
+    // Performance monitoring
+    assign stage = ctrl_stage;
 
     // Default output read address (can be extended for host readback)
     assign mem_output_rd_addr = 16'h0000;

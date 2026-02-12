@@ -16,6 +16,7 @@ module perf_counters #(
     input  logic mac_valid,      // MAC operation occurring (for MAC counting)
     input  logic mem_read,       // Memory read occurring
     input  logic mem_write,      // Memory write occurring
+    input  logic [2:0] stage,    // Current pipeline stage (3'b000=IDLE, 3'b001=INIT, 3'b010=LOAD, 3'b011=COMPUTE, 3'b100=ACTIVATE, 3'b101=STORE)
 
     // Configuration
     input  logic clear_counters, // Reset all counters
@@ -31,6 +32,11 @@ module perf_counters #(
     output logic [COUNTER_WIDTH-1:0] total_mem_reads,    // Total memory reads
     output logic [COUNTER_WIDTH-1:0] total_mem_writes,   // Total memory writes
     output logic [COUNTER_WIDTH-1:0] idle_cycles,        // Cycles spent idle
+    output logic [COUNTER_WIDTH-1:0] init_cycles,        // Cycles spent in INIT stage
+    output logic [COUNTER_WIDTH-1:0] load_cycles,        // Cycles spent in LOAD stage
+    output logic [COUNTER_WIDTH-1:0] compute_cycles,     // Cycles spent in COMPUTE stage
+    output logic [COUNTER_WIDTH-1:0] activate_cycles,    // Cycles spent in ACTIVATE stage
+    output logic [COUNTER_WIDTH-1:0] store_cycles,       // Cycles spent in STORE stage
 
     // Status
     output logic target_reached                          // Hit target inference count
@@ -50,6 +56,11 @@ module perf_counters #(
             total_mem_reads   <= '0;
             total_mem_writes  <= '0;
             idle_cycles       <= '0;
+            init_cycles       <= '0;
+            load_cycles       <= '0;
+            compute_cycles    <= '0;
+            activate_cycles   <= '0;
+            store_cycles      <= '0;
             cycle_counter     <= '0;
             was_busy          <= 1'b0;
             target_reached    <= 1'b0;
@@ -60,6 +71,16 @@ module perf_counters #(
             if (busy) begin
                 cycle_counter <= cycle_counter + 1;
                 total_cycles <= total_cycles + 1;
+
+                // Count per-stage cycles
+                case (stage)
+                    3'b001: init_cycles <= init_cycles + 1;
+                    3'b010: load_cycles <= load_cycles + 1;
+                    3'b011: compute_cycles <= compute_cycles + 1;
+                    3'b100: activate_cycles <= activate_cycles + 1;
+                    3'b101: store_cycles <= store_cycles + 1;
+                    default: ; // No increment for IDLE or undefined stages
+                endcase
             end else begin
                 idle_cycles <= idle_cycles + 1;
             end

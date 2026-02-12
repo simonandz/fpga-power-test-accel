@@ -2,10 +2,14 @@
 2020.2
 Nov  8 2024
 22:36:57
-R:/fpga/fpga-power-test-accel/common/rtl/activation_unit.sv,1764134170,systemVerilog,,R:/fpga/fpga-power-test-accel/common/rtl/mac_array_8x.sv,,activation_unit,,,,,,,,
-R:/fpga/fpga-power-test-accel/common/rtl/mac_array_8x.sv,1762982997,systemVerilog,,R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_compute_datapath.sv,,mac_array_8x,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/rtl/activation_unit.sv,1764134170,systemVerilog,,R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_memory_subsystem.sv,,activation_unit,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/rtl/mac_array_8x.sv,1765997781,systemVerilog,,R:/fpga/fpga-power-test-accel/common/rtl/activation_unit.sv,,mac_array_8x,,,,,,,,
+R:/fpga/fpga-power-test-accel/common/rtl/perf_counters.sv,1770855227,systemVerilog,,R:/fpga/fpga-power-test-accel/common/rtl/mac_array_8x.sv,,perf_counters,,,,,,,,
 R:/fpga/fpga-power-test-accel/common/tb/hello_tb.sv,1758734409,systemVerilog,,,,hello_tb,,,,,,,,
-R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_compute_datapath.sv,1764134064,systemVerilog,,R:/fpga/fpga-power-test-accel/mlp/tb/tb_mlp_compute_datapath.sv,,mlp_compute_datapath,,,,,,,,
-R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_memory_subsystem.sv,1764134188,systemVerilog,,R:/fpga/fpga-power-test-accel/mlp/tb/tb_mlp_memory_subsystem.sv,,mlp_memory_subsystem,,,,,,,,
+R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_compute_datapath.sv,1764134064,systemVerilog,,R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_controller.sv,,mlp_compute_datapath,,,,,,,,
+,,,,R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_top.sv,,mlp_controller,,,,,,,,
+R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_memory_subsystem.sv,1764134188,systemVerilog,,R:/fpga/fpga-power-test-accel/mlp/rtl/mlp_compute_datapath.sv,,mlp_memory_subsystem,,,,,,,,
+,,,,R:/fpga/fpga-power-test-accel/mlp/tb/tb_mlp_benchmark.sv,,mlp_top,,,,,,,,
+,,,,,,tb_mlp_benchmark,,,,,,,,
 R:/fpga/fpga-power-test-accel/mlp/tb/tb_mlp_compute_datapath.sv,1764134291,systemVerilog,,,,tb_mlp_compute_datapath,,,,,,,,
 R:/fpga/fpga-power-test-accel/mlp/tb/tb_mlp_memory_subsystem.sv,1762981150,systemVerilog,,,,tb_mlp_memory_subsystem,,,,,,,,

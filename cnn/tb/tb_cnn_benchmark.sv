@@ -1,37 +1,54 @@
-// MLP Benchmark Testbench
+// CNN Benchmark Testbench
 // Runs N inferences and collects performance metrics
-// Generates SAIF-compatible switching activity for power analysis
+// Generates VCD switching activity for power analysis
+//
+// Comparable to MLP benchmark for power/performance comparison
 
 `timescale 1ns / 1ps
 
-module tb_mlp_benchmark;
+module tb_cnn_benchmark;
 
     //==========================================================================
     // Parameters
     //==========================================================================
     parameter NUM_INFERENCES = 1000;
-    parameter NUM_INPUTS = 8;
-    parameter NUM_OUTPUTS = 4;
-    parameter CLK_PERIOD_NS = 10;  // 100 MHz
-    parameter RANDOM_SEED = 12345;
+    parameter IMG_W          = 16;
+    parameter IMG_H          = 16;
+    parameter IMG_SIZE       = IMG_W * IMG_H;    // 256
+    parameter KER_SIZE       = 3;
+    parameter KER_DEPTH      = KER_SIZE * KER_SIZE;  // 9
+    parameter STRIDE         = 1;
+    parameter PAD            = 1;
+    parameter POOL_EN        = 1;
+    parameter CLK_PERIOD_NS  = 10;  // 100 MHz
+    parameter MACS_PER_INFERENCE = KER_DEPTH * IMG_W * IMG_H;  // 9 * 16 * 16 = 2304
 
     //==========================================================================
     // Signals
     //==========================================================================
-    logic clk, rst_n;
-    logic start, done, busy;
-    logic [15:0] num_inputs, num_outputs;
-    logic [15:0] input_addr, weight_addr, bias_addr;
-    logic [7:0] input_data, weight_data, bias_data;
-    logic input_we, weight_we, bias_we;
-    logic [7:0] output_data;
-    logic output_valid;
+    logic        clk, rst_n;
+    logic        start, done, busy;
+    logic        pool_enable;
+
+    // Host load interfaces
+    logic [15:0] ifmap_addr;
+    logic [7:0]  ifmap_data;
+    logic        ifmap_we;
+    logic [3:0]  kernel_addr;
+    logic [7:0]  kernel_data;
+    logic        kernel_we;
+    logic [7:0]  bias_data;
+    logic        bias_we;
+
+    // Output interface
+    logic [7:0]  output_data;
+    logic        output_valid;
     logic [15:0] output_wr_addr;
     logic [7:0]  output_wr_data;
     logic        output_wr_en;
 
     // Performance counters
-    logic clear_counters;
+    logic        clear_counters;
     logic [31:0] target_inferences;
     logic [31:0] total_cycles;
     logic [31:0] inference_count;
@@ -42,7 +59,7 @@ module tb_mlp_benchmark;
     logic [31:0] total_mem_reads;
     logic [31:0] total_mem_writes;
     logic [31:0] idle_cycles;
-    logic target_reached;
+    logic        target_reached;
     logic [2:0]  stage;
     logic [31:0] init_cycles;
     logic [31:0] load_cycles;
@@ -53,12 +70,9 @@ module tb_mlp_benchmark;
     // Testbench variables
     int unsigned completed_inferences;
     real start_time, end_time, total_time_ns;
-    logic [7:0] test_inputs[NUM_INPUTS];
-    logic [7:0] test_weights[NUM_OUTPUTS * NUM_INPUTS];
-    logic [7:0] test_biases[NUM_OUTPUTS];
 
     //==========================================================================
-    // Clock generation
+    // Clock generation - 100 MHz (10ns period)
     //==========================================================================
     initial begin
         clk = 0;
@@ -66,23 +80,28 @@ module tb_mlp_benchmark;
     end
 
     //==========================================================================
-    // DUT - MLP Top
+    // DUT - CNN Top
     //==========================================================================
-    mlp_top dut (
+    cnn_top #(
+        .IMG_W(IMG_W),
+        .IMG_H(IMG_H),
+        .KER_SIZE(KER_SIZE),
+        .STRIDE(STRIDE),
+        .PAD(PAD),
+        .POOL_EN(POOL_EN)
+    ) dut (
         .clk(clk),
         .rst_n(rst_n),
         .start(start),
         .done(done),
         .busy(busy),
-        .num_inputs(num_inputs),
-        .num_outputs(num_outputs),
-        .input_addr(input_addr),
-        .input_data(input_data),
-        .input_we(input_we),
-        .weight_addr(weight_addr),
-        .weight_data(weight_data),
-        .weight_we(weight_we),
-        .bias_addr(bias_addr),
+        .pool_enable(pool_enable),
+        .ifmap_addr(ifmap_addr),
+        .ifmap_data(ifmap_data),
+        .ifmap_we(ifmap_we),
+        .kernel_addr(kernel_addr),
+        .kernel_data(kernel_data),
+        .kernel_we(kernel_we),
         .bias_data(bias_data),
         .bias_we(bias_we),
         .output_data(output_data),
@@ -105,7 +124,7 @@ module tb_mlp_benchmark;
         .done(done),
         .busy(busy),
         .mac_valid(output_valid),  // Approximate: count output valids as MAC batches
-        .mem_read(input_we || weight_we || bias_we),
+        .mem_read(ifmap_we || kernel_we || bias_we),
         .mem_write(output_wr_en),
         .stage(stage),
         .clear_counters(clear_counters),
@@ -131,29 +150,28 @@ module tb_mlp_benchmark;
     // Tasks
     //==========================================================================
 
-    task automatic load_input(input int addr, input logic [7:0] data);
+    task automatic load_ifmap_pixel(input int addr, input logic [7:0] data);
         @(posedge clk);
-        input_addr = addr;
-        input_data = data;
-        input_we = 1'b1;
+        ifmap_addr = addr[15:0];
+        ifmap_data = data;
+        ifmap_we   = 1'b1;
         @(posedge clk);
-        input_we = 1'b0;
+        ifmap_we = 1'b0;
     endtask
 
-    task automatic load_weight(input int addr, input logic [7:0] data);
+    task automatic load_kernel_weight(input int addr, input logic [7:0] data);
         @(posedge clk);
-        weight_addr = addr;
-        weight_data = data;
-        weight_we = 1'b1;
+        kernel_addr = addr[3:0];
+        kernel_data = data;
+        kernel_we   = 1'b1;
         @(posedge clk);
-        weight_we = 1'b0;
+        kernel_we = 1'b0;
     endtask
 
-    task automatic load_bias(input int addr, input logic [7:0] data);
+    task automatic load_bias_val(input logic [7:0] data);
         @(posedge clk);
-        bias_addr = addr;
         bias_data = data;
-        bias_we = 1'b1;
+        bias_we   = 1'b1;
         @(posedge clk);
         bias_we = 1'b0;
     endtask
@@ -167,28 +185,22 @@ module tb_mlp_benchmark;
         @(posedge clk);
     endtask
 
-    task automatic load_random_inputs();
+    task automatic load_random_ifmap();
         int i;
-        for (i = 0; i < NUM_INPUTS; i++) begin
-            test_inputs[i] = $random & 8'hFF;
-            load_input(i, test_inputs[i]);
+        for (i = 0; i < IMG_SIZE; i++) begin
+            load_ifmap_pixel(i, $random & 8'hFF);
         end
     endtask
 
-    task automatic load_random_weights();
+    task automatic load_random_kernel();
         int i;
-        for (i = 0; i < NUM_OUTPUTS * NUM_INPUTS; i++) begin
-            test_weights[i] = $random & 8'hFF;
-            load_weight(i, test_weights[i]);
+        for (i = 0; i < KER_DEPTH; i++) begin
+            load_kernel_weight(i, $random & 8'hFF);
         end
     endtask
 
-    task automatic load_random_biases();
-        int i;
-        for (i = 0; i < NUM_OUTPUTS; i++) begin
-            test_biases[i] = $random & 8'hFF;
-            load_bias(i, test_biases[i]);
-        end
+    task automatic load_random_bias();
+        load_bias_val($random & 8'hFF);
     endtask
 
     //==========================================================================
@@ -197,15 +209,15 @@ module tb_mlp_benchmark;
     initial begin
         int i;
         real avg_latency, throughput, macs_per_inference;
-        real clock_freq_mhz, inferences_per_sec, gops, energy_estimate;
-
-        // Note: XSim doesn't support $urandom/$random seeding
-        // Random values will still be generated but not reproducible
+        real clock_freq_mhz, inferences_per_sec, gops;
 
         $display("");
         $display("================================================================");
-        $display("MLP Benchmark - %0d Inferences", NUM_INFERENCES);
-        $display("Configuration: %0d inputs x %0d outputs", NUM_INPUTS, NUM_OUTPUTS);
+        $display("CNN Benchmark - %0d Inferences", NUM_INFERENCES);
+        $display("Configuration: %0dx%0d input, %0dx%0d kernel, stride=%0d, pad=%0d",
+                 IMG_H, IMG_W, KER_SIZE, KER_SIZE, STRIDE, PAD);
+        $display("MACs per inference: %0d (= %0d * %0d * %0d)",
+                 MACS_PER_INFERENCE, KER_DEPTH, IMG_H, IMG_W);
         $display("Clock: %0d MHz", 1000/CLK_PERIOD_NS);
         $display("================================================================");
         $display("");
@@ -215,11 +227,10 @@ module tb_mlp_benchmark;
         start = 0;
         clear_counters = 0;
         target_inferences = NUM_INFERENCES;
-        num_inputs = NUM_INPUTS;
-        num_outputs = NUM_OUTPUTS;
-        input_addr = 0; input_data = 0; input_we = 0;
-        weight_addr = 0; weight_data = 0; weight_we = 0;
-        bias_addr = 0; bias_data = 0; bias_we = 0;
+        pool_enable = 0;  // No pooling for benchmark (measure conv only)
+        ifmap_addr = 0; ifmap_data = 0; ifmap_we = 0;
+        kernel_addr = 0; kernel_data = 0; kernel_we = 0;
+        bias_data = 0; bias_we = 0;
         completed_inferences = 0;
 
         // Reset sequence
@@ -233,10 +244,10 @@ module tb_mlp_benchmark;
         clear_counters = 0;
         @(posedge clk);
 
-        // Load initial weights and biases (keep same for all inferences)
-        $display("[%0t] Loading weights and biases...", $time);
-        load_random_weights();
-        load_random_biases();
+        // Load initial kernel and bias (keep same for all inferences)
+        $display("[%0t] Loading kernel weights and bias...", $time);
+        load_random_kernel();
+        load_random_bias();
 
         // Record start time
         start_time = $realtime;
@@ -247,8 +258,8 @@ module tb_mlp_benchmark;
         // Run N inferences with random inputs
         //======================================================================
         for (i = 0; i < NUM_INFERENCES; i++) begin
-            // Load new random inputs for each inference
-            load_random_inputs();
+            // Load new random input feature map for each inference
+            load_random_ifmap();
 
             // Run inference
             run_single_inference();
@@ -313,7 +324,7 @@ module tb_mlp_benchmark;
         $display("");
 
         // Compute metrics
-        macs_per_inference = NUM_INPUTS * NUM_OUTPUTS;  // For single layer
+        macs_per_inference = MACS_PER_INFERENCE;
         gops = (macs_per_inference * 2 * inferences_per_sec) / 1e9;  // MAC = 2 ops
         $display("--- Compute ---");
         $display("MACs per inference:   %.0f", macs_per_inference);
@@ -322,10 +333,11 @@ module tb_mlp_benchmark;
 
         // Memory bandwidth
         $display("--- Memory Bandwidth ---");
-        $display("Bytes read/inference: %0d", NUM_INPUTS + NUM_OUTPUTS*NUM_INPUTS + NUM_OUTPUTS);
-        $display("Bytes written/infer:  %0d", NUM_OUTPUTS);
+        $display("Bytes read/inference: %0d (ifmap=%0d, kernel=%0d, bias=1)",
+                 IMG_SIZE + KER_DEPTH + 1, IMG_SIZE, KER_DEPTH);
+        $display("Bytes written/infer:  %0d", IMG_SIZE);  // Full output map
         $display("Read BW @ 100MHz:     %.2f MB/s",
-                 (NUM_INPUTS + NUM_OUTPUTS*NUM_INPUTS + NUM_OUTPUTS) * inferences_per_sec / 1e6);
+                 (IMG_SIZE + KER_DEPTH + 1) * inferences_per_sec / 1e6);
         $display("");
 
         // Simulation time
@@ -333,11 +345,14 @@ module tb_mlp_benchmark;
         $display("Simulated time:       %.2f us", total_time_ns / 1000);
         $display("");
 
-        // CSV output for easy parsing
+        // CSV output for easy parsing (comparable to MLP benchmark)
         $display("================================================================");
         $display("CSV OUTPUT (copy for spreadsheet):");
         $display("================================================================");
         $display("metric,value");
+        $display("accelerator,CNN");
+        $display("img_size,%0dx%0d", IMG_H, IMG_W);
+        $display("kernel_size,%0dx%0d", KER_SIZE, KER_SIZE);
         $display("inferences,%0d", inference_count);
         $display("total_cycles,%0d", total_cycles);
         $display("avg_latency_cycles,%.2f", avg_latency);
@@ -363,7 +378,7 @@ module tb_mlp_benchmark;
     // Timeout
     //==========================================================================
     initial begin
-        #100000000;  // 100ms timeout
+        #500000000;  // 500ms timeout (CNN is slower than MLP per inference)
         $display("");
         $display("ERROR: Simulation timeout!");
         $display("");
@@ -374,8 +389,8 @@ module tb_mlp_benchmark;
     // VCD dump for SAIF generation
     //==========================================================================
     initial begin
-        $dumpfile("mlp_benchmark.vcd");
-        $dumpvars(0, tb_mlp_benchmark);
+        $dumpfile("cnn_benchmark.vcd");
+        $dumpvars(0, dut);
     end
 
 endmodule

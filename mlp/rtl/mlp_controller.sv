@@ -38,7 +38,8 @@ module mlp_controller (
 
     // Data flow control
     output logic         load_inputs_weights,  // Signal to load data into datapath
-    output logic [2:0]   load_offset           // Which of 8 inputs to load
+    output logic [2:0]   load_offset,          // Which of 8 inputs to load
+    output logic [2:0]   stage                 // Current pipeline stage for perf_counters
 );
 
     // FSM states
@@ -279,5 +280,19 @@ module mlp_controller (
     assign weight_rd_addr = addr_wt;
     assign bias_rd_addr = neuron_idx[7:0];
     assign output_wr_addr = addr_out;
+
+    // Stage encoding for performance counters
+    always_comb begin
+        case (state)
+            IDLE:         stage = 3'b000;  // STAGE_IDLE
+            INIT_NEURON:  stage = 3'b001;  // STAGE_INIT
+            LOAD_DATA:    stage = 3'b010;  // STAGE_LOAD
+            COMPUTE:      stage = 3'b011;  // STAGE_COMPUTE
+            ACTIVATE:     stage = 3'b100;  // STAGE_ACTIVATE
+            STORE_OUTPUT: stage = 3'b101;  // STAGE_STORE
+            DONE_STATE:   stage = 3'b000;  // STAGE_IDLE
+            default:      stage = 3'b000;  // STAGE_IDLE
+        endcase
+    end
 
 endmodule
