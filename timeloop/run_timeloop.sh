@@ -26,11 +26,14 @@ esac
 MAPPER_CMD="timeloop-mapper \"$ARCH\" \"$PROBLEM\" \"$MAPPER_CFG\""
 case "$(basename "$ARCH")" in
   cnn_accel_9mac.yaml|cnn_accel_3mac.yaml|cnn_accel_1mac.yaml)
-  MAPPER_CMD="$MAPPER_CMD energy/artix7_ERT.yaml energy/artix7_ART.yaml"
+  CONSTRAINTS_FILE="constraints/cnn_splitbuf_hard_constraints.yaml"
+  MAPPER_CMD="$MAPPER_CMD \"$CONSTRAINTS_FILE\" energy/artix7_ERT.yaml energy/artix7_ART.yaml"
   ENERGY_MODE="custom Artix-7 ERT/ART (1/3/9-MAC variants)"
+  CONSTRAINT_MODE="hard split-buffer architecture constraints"
   ;;
   *)
   ENERGY_MODE="auto-generated Accelergy ERT/ART (no matching custom table entries configured)"
+  CONSTRAINT_MODE="none"
   ;;
 esac
 MAPPER_CMD="$MAPPER_CMD -o \"$OUTDIR\""
@@ -41,13 +44,15 @@ echo "Problem:      $PROBLEM"
 echo "Output:       $OUTDIR"
 echo "Image:        $IMAGE"
 echo "Mapper cfg:   $MAPPER_CFG"
+echo "Constraints:  $CONSTRAINT_MODE"
 echo "Energy mode:  $ENERGY_MODE"
 echo ""
 
 # Option 1: Docker (recommended)
 # Initializes table plug-in paths in the same container invocation (safe no-op if already initialized)
-# and uses custom Artix-7 ERT/ART for supported 1/3/9-MAC architectures to avoid
-# auto-generated empty ERT issues in some container setups.
+# and uses hard split-buffer constraints + custom Artix-7 ERT/ART for supported
+# 1/3/9-MAC architectures to avoid auto-generated empty ERT issues and enforce
+# fixed RTL buffer roles.
 docker run --rm \
   -v "$(pwd):/workspace" \
   -w /workspace \
@@ -63,6 +68,7 @@ docker run --rm \
 #   "$ARCH" \
 #   "$PROBLEM" \
 #   mapper/mapper_config.yaml \
+#   constraints/cnn_splitbuf_hard_constraints.yaml \
 #   energy/artix7_ERT.yaml \
 #   energy/artix7_ART.yaml \
 #   -o "$OUTDIR"

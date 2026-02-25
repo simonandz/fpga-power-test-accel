@@ -1,0 +1,32 @@
+# Hard architectural constraints for the split-buffer CNN Timeloop models.
+# These are enforced by timeloop-mapper (unlike the soft datatype entries in
+# mapper_config*.yaml, which can be overridden in the explored mapspace).
+#
+# Applies to:
+#   - arch/cnn_accel_9mac.yaml
+#   - arch/cnn_accel_3mac.yaml
+#   - arch/cnn_accel_1mac.yaml
+
+architecture_constraints:
+  targets:
+    # Enforce fixed buffer roles matching RTL semantics.
+    - target: ifmap_buffer
+      type: bypass
+      bypass: [Weights, Outputs]
+      keep: [Inputs]
+
+    - target: weight_buffer
+      type: bypass
+      bypass: [Inputs, Outputs]
+      keep: [Weights]
+
+    - target: ofmap_buffer
+      type: bypass
+      bypass: [Weights, Inputs]
+      keep: [Outputs]
+
+    # Off-chip memory is the backing store for all datatypes.
+    - target: DRAM
+      type: bypass
+      bypass: []
+      keep: [Weights, Inputs, Outputs]
