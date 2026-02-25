@@ -78,7 +78,6 @@ module cnn_memory_subsystem #(
     initial begin
         for (int i = 0; i < IMG_DEPTH; i++) ifmap_bram[i] = 8'h00;
         for (int i = 0; i < KER_DEPTH; i++) kernel_regs[i] = 8'h00;
-        bias_reg = 8'h00;
         for (int i = 0; i < IMG_DEPTH; i++) ofmap_bram[i] = 8'h00;
 
         `ifndef SYNTHESIS

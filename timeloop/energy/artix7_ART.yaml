@@ -1,0 +1,32 @@
+# Artix-7 Area Reference Table (ART)
+# Fully-qualified names matching flattened hierarchies produced by the v0.3
+# architecture files (9-MAC / 3-MAC / 1-MAC variants).
+# Includes both split-buffer and legacy single-buffer models.
+
+ART:
+  version: '0.4'
+  tables:
+    - name: system.DRAM
+      area: 0.0
+
+    - name: system.chip.global_buffer
+      area: 7680.0
+
+    # BRAM-granularity placeholder areas for split on-chip memories.
+    - name: system.chip.ifmap_buffer
+      area: 7680.0
+
+    - name: system.chip.weight_buffer
+      area: 7680.0
+
+    - name: system.chip.ofmap_buffer
+      area: 7680.0
+
+    - name: system.chip.PE[0..8].mac
+      area: 2400.0
+
+    - name: system.chip.PE[0..2].mac
+      area: 2400.0
+
+    - name: system.chip.PE[0..0].mac
+      area: 2400.0

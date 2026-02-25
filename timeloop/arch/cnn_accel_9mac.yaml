@@ -1,0 +1,68 @@
+# CNN Accelerator Architecture - 9-MAC Baseline (v0.3 format)
+# Uses primitive component classes that Accelergy's built-in plug-ins support:
+#   - SRAM: estimated by CactiSRAM
+#   - DRAM: estimated by CactiDRAM
+#   - intmac: estimated by Aladdin_table
+
+architecture:
+  version: 0.3
+
+  subtree:
+    - name: system
+      attributes:
+        technology: "45nm"
+
+      local:
+      - name: DRAM
+        class: DRAM
+        attributes:
+          width: 8
+          datawidth: 8
+          type: "LPDDR4"
+
+      subtree:
+      - name: chip
+
+        local:
+        # Split on-chip memories to match RTL structure and prevent ambiguous
+        # datatype placement in Timeloop (separate input/weight/output BRAMs).
+        # ifmap_buffer depth=324 models the padded 18x18 logical input footprint.
+        - name: ifmap_buffer
+          class: SRAM
+          attributes:
+            depth: 324
+            width: 8
+            datawidth: 8
+            word_bits: 8
+            n_banks: 1
+            n_rdwr_ports: 2
+
+        - name: weight_buffer
+          class: SRAM
+          attributes:
+            depth: 9
+            width: 8
+            datawidth: 8
+            word_bits: 8
+            n_banks: 1
+            n_rdwr_ports: 2
+
+        - name: ofmap_buffer
+          class: SRAM
+          attributes:
+            depth: 256
+            width: 8
+            datawidth: 8
+            word_bits: 8
+            n_banks: 1
+            n_rdwr_ports: 2
+
+        subtree:
+        - name: PE[0..8]
+
+          local:
+          - name: mac
+            class: intmac
+            attributes:
+              datawidth: 8
+              width: 8

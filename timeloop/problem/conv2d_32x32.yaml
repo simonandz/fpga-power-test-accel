@@ -1,0 +1,44 @@
+# Workload: 3x3 Convolution on 32x32 Input (LARGE)
+# Larger feature map variant to explore scaling behavior
+# Output: 32x32 (with pad=1, stride=1)
+# Note: Requires BRAM depth >= 1024 (32x32) for ifmap and ofmap
+
+problem:
+  shape:
+    name: Conv2D
+    dimensions: [R, S, P, Q, C, K, N]
+    coefficients:
+      - name: Wstride
+        default: 1
+      - name: Hstride
+        default: 1
+    data-spaces:
+      - name: Weights
+        projection:
+          - [[C]]
+          - [[K]]
+          - [[R]]
+          - [[S]]
+      - name: Inputs
+        projection:
+          - [[N]]
+          - [[C]]
+          - [[R], [P, Hstride]]
+          - [[S], [Q, Wstride]]
+      - name: Outputs
+        projection:
+          - [[N]]
+          - [[K]]
+          - [[P]]
+          - [[Q]]
+        read-write: true
+  instance:
+    R: 3
+    S: 3
+    P: 32             # output height (32x32)
+    Q: 32             # output width
+    C: 1
+    K: 1
+    N: 1
+    Wstride: 1
+    Hstride: 1

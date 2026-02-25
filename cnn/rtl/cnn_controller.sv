@@ -63,6 +63,8 @@ module cnn_controller #(
     localparam OUT_H = (IMG_H + 2*PAD - KER_SIZE) / STRIDE + 1;
     localparam OUT_W = (IMG_W + 2*PAD - KER_SIZE) / STRIDE + 1;
     localparam TOTAL_OUT_PIXELS = OUT_H * OUT_W;
+    localparam logic [$clog2(OUT_H)-1:0] OUT_H_LAST = OUT_H - 1;
+    localparam logic [$clog2(OUT_W)-1:0] OUT_W_LAST = OUT_W - 1;
 
     // =========================================================================
     // FSM states
@@ -99,6 +101,7 @@ module cnn_controller #(
     // Input coordinate calculation (signed to detect padding)
     logic signed [$clog2(IMG_H)+1:0] in_row;
     logic signed [$clog2(IMG_W)+1:0] in_col;
+    logic                             pad_zero_comb;
 
     // Activation tracking
     logic activation_triggered;
@@ -152,8 +155,8 @@ module cnn_controller #(
 
             S_NEXT_PIXEL: begin
                 // Check if all output pixels done
-                if (out_r >= OUT_H[$clog2(OUT_H)-1:0] - 1 &&
-                    out_c >= OUT_W[$clog2(OUT_W)-1:0] - 1) begin
+                if (out_r >= OUT_H_LAST &&
+                    out_c >= OUT_W_LAST) begin
                     next_state = S_DONE;
                 end else begin
                     next_state = S_INIT_PIXEL;
@@ -180,11 +183,11 @@ module cnn_controller #(
         in_col = $signed({1'b0, out_c}) * STRIDE + $signed({2'b00, kc_reg}) - PAD;
 
         // Zero-padding detection
-        pad_zero = (in_row < 0) || (in_row >= IMG_H) ||
-                   (in_col < 0) || (in_col >= IMG_W);
+        pad_zero_comb = (in_row < 0) || (in_row >= IMG_H) ||
+                        (in_col < 0) || (in_col >= IMG_W);
 
         // BRAM address (valid only when !pad_zero)
-        if (!pad_zero)
+        if (!pad_zero_comb)
             ifmap_rd_addr = in_row[$clog2(IMG_H)-1:0] * IMG_W + in_col[$clog2(IMG_W)-1:0];
         else
             ifmap_rd_addr = 16'h0000;
@@ -215,6 +218,7 @@ module cnn_controller #(
             load_kernel_idx <= 4'd0;
             load_window <= 1'b0;
             load_window_idx <= 4'd0;
+            pad_zero <= 1'b0;
             activation_triggered <= 1'b0;
             mac_triggered <= 1'b0;
             conv_result_ready <= 1'b0;
@@ -227,6 +231,7 @@ module cnn_controller #(
             load_kernel <= 1'b0;
             load_window <= 1'b0;
             conv_result_ready <= 1'b0;
+            pad_zero <= pad_zero_comb;
 
             case (state)
                 // =============================================================
@@ -338,7 +343,7 @@ module cnn_controller #(
                 // =============================================================
                 S_NEXT_PIXEL: begin
                     // Advance output position (raster order)
-                    if (out_c >= OUT_W[$clog2(OUT_W)-1:0] - 1) begin
+                    if (out_c >= OUT_W_LAST) begin
                         out_c <= '0;
                         out_r <= out_r + 1;
                     end else begin

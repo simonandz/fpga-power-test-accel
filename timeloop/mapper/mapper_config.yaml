@@ -1,0 +1,53 @@
+# Timeloop Mapper Configuration
+# Explores loop orderings, tiling factors, and spatial mappings
+# to find Pareto-optimal energy vs. latency tradeoffs
+#
+# Usage: timeloop-mapper arch.yaml problem.yaml mapper_config.yaml
+
+mapper:
+  optimization-metrics:
+    - delay          # Primary: minimize latency (cycles)
+    - energy         # Secondary: minimize energy (pJ)
+  search-size: 0     # 0 = exhaustive (for small design space)
+  num-threads: 8     # Parallel search threads
+  timeout: 1000      # Seconds before stopping
+  victory-condition: 500  # Stop after 500 consecutive non-improving mappings
+
+  # For larger design spaces, use random/hybrid search:
+  # algorithm: random
+  # max-permutations-per-if-visit: 16
+
+# Mapping constraints to match RTL capabilities.
+# The architecture model uses separate on-chip SRAMs for inputs, weights, and outputs.
+mapping:
+  - target: ifmap_buffer
+    type: datatype
+    keep: [Inputs]
+    bypass: [Weights, Outputs]
+
+  - target: weight_buffer
+    type: datatype
+    keep: [Weights]
+    bypass: [Inputs, Outputs]
+
+  - target: ofmap_buffer
+    type: datatype
+    keep: [Outputs]
+    bypass: [Weights, Inputs]
+
+  - target: DRAM
+    type: datatype
+    keep: [Weights, Inputs, Outputs]
+    bypass: []
+
+  # 9-MAC baseline: map the 3x3 kernel (R*S=9) spatially across the PE array.
+  # For 3-MAC / 1-MAC runs, adjust or remove this spatial constraint (see notes below).
+  - target: PE
+    type: spatial
+    factors: RS=9     # All 9 kernel elements mapped spatially (for 9-MAC)
+    permutation: [R, S]
+
+# For 3-MAC variant, change to:
+#   factors: S=3      # 3 elements spatially, iterate R temporally
+#
+# For 1-MAC variant, remove spatial constraint entirely

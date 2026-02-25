@@ -1,0 +1,110 @@
+# Artix-7 Energy Reference Table (ERT)
+# Fully-qualified names matching flattened hierarchies produced by the v0.3
+# architecture files (9-MAC / 3-MAC / 1-MAC variants).
+# Includes both the newer split-buffer model (ifmap/weight/ofmap) and the legacy
+# single-buffer model (global_buffer) for backwards compatibility.
+
+ERT:
+  version: '0.4'
+  tables:
+    - name: system.DRAM
+      actions:
+        - name: read
+          arguments: {}
+          energy: 200.0
+        - name: write
+          arguments: {}
+          energy: 200.0
+        - name: update
+          arguments: {}
+          energy: 200.0
+        - name: leak
+          arguments: {}
+          energy: 0.0
+
+    - name: system.chip.global_buffer
+      actions:
+        - name: read
+          arguments: {}
+          energy: 7.3
+        - name: write
+          arguments: {}
+          energy: 7.3
+        - name: update
+          arguments: {}
+          energy: 7.3
+        - name: leak
+          arguments: {}
+          energy: 0.02
+
+    - name: system.chip.ifmap_buffer
+      actions:
+        - name: read
+          arguments: {}
+          energy: 7.3
+        - name: write
+          arguments: {}
+          energy: 7.3
+        - name: update
+          arguments: {}
+          energy: 7.3
+        - name: leak
+          arguments: {}
+          energy: 0.02
+
+    - name: system.chip.weight_buffer
+      actions:
+        - name: read
+          arguments: {}
+          energy: 7.3
+        - name: write
+          arguments: {}
+          energy: 7.3
+        - name: update
+          arguments: {}
+          energy: 7.3
+        - name: leak
+          arguments: {}
+          energy: 0.02
+
+    - name: system.chip.ofmap_buffer
+      actions:
+        - name: read
+          arguments: {}
+          energy: 7.3
+        - name: write
+          arguments: {}
+          energy: 7.3
+        - name: update
+          arguments: {}
+          energy: 7.3
+        - name: leak
+          arguments: {}
+          energy: 0.02
+
+    - name: system.chip.PE[0..8].mac
+      actions:
+        - name: compute
+          arguments: {}
+          energy: 3.5
+        - name: leak
+          arguments: {}
+          energy: 0.01
+
+    - name: system.chip.PE[0..2].mac
+      actions:
+        - name: compute
+          arguments: {}
+          energy: 3.5
+        - name: leak
+          arguments: {}
+          energy: 0.01
+
+    - name: system.chip.PE[0..0].mac
+      actions:
+        - name: compute
+          arguments: {}
+          energy: 3.5
+        - name: leak
+          arguments: {}
+          energy: 0.01

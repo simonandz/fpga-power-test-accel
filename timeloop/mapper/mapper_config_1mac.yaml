@@ -1,0 +1,33 @@
+# Timeloop Mapper Configuration (1-MAC)
+# No spatial kernel mapping: all kernel work is temporal.
+
+mapper:
+  optimization-metrics:
+    - delay
+    - energy
+  search-size: 0
+  num-threads: 8
+  timeout: 1000
+  victory-condition: 500
+
+mapping:
+  # Match RTL behavior: distinct on-chip BRAMs for inputs/weights/outputs.
+  - target: ifmap_buffer
+    type: datatype
+    keep: [Inputs]
+    bypass: [Weights, Outputs]
+
+  - target: weight_buffer
+    type: datatype
+    keep: [Weights]
+    bypass: [Inputs, Outputs]
+
+  - target: ofmap_buffer
+    type: datatype
+    keep: [Outputs]
+    bypass: [Weights, Inputs]
+
+  - target: DRAM
+    type: datatype
+    keep: [Weights, Inputs, Outputs]
+    bypass: []

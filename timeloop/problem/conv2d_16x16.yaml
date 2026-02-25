@@ -1,0 +1,44 @@
+# Workload: 3x3 Convolution on 16x16 Input (BASELINE)
+# Matches: cnn_top.sv default parameters (IMG_W=16, IMG_H=16, KER_SIZE=3, STRIDE=1, PAD=1)
+# Output: 16x16 (same spatial dimensions due to padding=1)
+# Single channel (C=1), single filter (K=1), batch=1
+
+problem:
+  shape:
+    name: Conv2D
+    dimensions: [R, S, P, Q, C, K, N]
+    coefficients:
+      - name: Wstride
+        default: 1
+      - name: Hstride
+        default: 1
+    data-spaces:
+      - name: Weights
+        projection:
+          - [[C]]
+          - [[K]]
+          - [[R]]
+          - [[S]]
+      - name: Inputs
+        projection:
+          - [[N]]
+          - [[C]]
+          - [[R], [P, Hstride]]
+          - [[S], [Q, Wstride]]
+      - name: Outputs
+        projection:
+          - [[N]]
+          - [[K]]
+          - [[P]]
+          - [[Q]]
+        read-write: true
+  instance:
+    R: 3              # kernel height
+    S: 3              # kernel width
+    P: 16             # output height
+    Q: 16             # output width
+    C: 1              # input channels
+    K: 1              # output channels (filters)
+    N: 1              # batch size
+    Wstride: 1
+    Hstride: 1

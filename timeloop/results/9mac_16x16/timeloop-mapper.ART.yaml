@@ -1,0 +1,9 @@
+ART:
+    version: '0.4'
+    tables:
+      - name: system.chip.PE[0..8].mac
+        area: 466.375
+      - name: system.chip.global_buffer
+        area: 2669.1
+      - name: system.DRAM
+        area: 0.0

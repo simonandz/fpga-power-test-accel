@@ -1,0 +1,40 @@
+# Timeloop Mapper Configuration (3-MAC)
+# 3 spatial MACs map one kernel dimension; the other kernel dimension is temporal.
+
+mapper:
+  optimization-metrics:
+    - delay
+    - energy
+  search-size: 0
+  num-threads: 8
+  timeout: 1000
+  victory-condition: 500
+
+mapping:
+  # Match RTL behavior: distinct on-chip BRAMs for inputs/weights/outputs.
+  - target: ifmap_buffer
+    type: datatype
+    keep: [Inputs]
+    bypass: [Weights, Outputs]
+
+  - target: weight_buffer
+    type: datatype
+    keep: [Weights]
+    bypass: [Inputs, Outputs]
+
+  - target: ofmap_buffer
+    type: datatype
+    keep: [Outputs]
+    bypass: [Weights, Inputs]
+
+  - target: DRAM
+    type: datatype
+    keep: [Weights, Inputs, Outputs]
+    bypass: []
+
+  # 3-MAC variant: spatialize only one kernel dimension (3 lanes).
+  # Timeloop can schedule the remaining kernel dimension temporally.
+  - target: PE
+    type: spatial
+    factors: S=3
+    permutation: [R, S]

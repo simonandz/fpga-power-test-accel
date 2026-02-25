@@ -1,0 +1,25 @@
+mapping:
+  - target: global_buffer
+    type: datatype
+    keep:
+      - Weights
+      - Inputs
+      - Outputs
+    bypass:
+      []
+  - target: DRAM
+    type: datatype
+    keep:
+      - Weights
+      - Inputs
+      - Outputs
+    bypass:
+      []
+  - target: global_buffer
+    type: temporal
+    factors: R3 S3 P8 Q16 C1 K1 N1
+    permutation: RSPQCKN
+  - target: DRAM
+    type: temporal
+    factors: R1 S1 P2 Q1 C1 K1 N1
+    permutation: PRSQCKN
