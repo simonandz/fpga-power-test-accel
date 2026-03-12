@@ -2,10 +2,9 @@
 """
 Collect summary metrics from Timeloop result directories into a single CSV.
 
-Default behavior looks for the 1/3/9-MAC baseline runs:
-  timeloop/results/1mac_16x16
-  timeloop/results/3mac_16x16
-  timeloop/results/9mac_16x16
+Default behavior auto-discovers all result directories under timeloop/results/
+that contain a timeloop-mapper.stats.txt file.  Extracts mac_count, bitwidth,
+and problem from directory names (format: cnn_accel_{N}mac[_{B}b]__conv2d_{prob}).
 """
 
 from __future__ import annotations
@@ -238,15 +237,35 @@ def parse_map_txt(map_txt_path: Path) -> Dict[str, object]:
     return out
 
 
-def detect_config_from_dir(result_dir: Path) -> str:
+def detect_config_from_dir(result_dir: Path) -> Dict[str, object]:
+    """Extract structured metadata from a result directory name.
+
+    Supported formats:
+      New: cnn_accel_{N}mac[_{B}b]__conv2d_{problem}
+      Legacy: {N}mac_{problem}[_splitbuf[_hard]]
+    """
     name = result_dir.name
-    if name.startswith("1mac_"):
-        return "1mac"
-    if name.startswith("3mac_"):
-        return "3mac"
-    if name.startswith("9mac_"):
-        return "9mac"
-    return name
+    info: Dict[str, object] = {"config": name}
+
+    # Extract MAC count
+    mac_match = re.search(r"(\d+)mac", name)
+    if mac_match:
+        info["mac_count"] = int(mac_match.group(1))
+
+    # Extract bitwidth (default 8 if no _Nb suffix before __)
+    bw_match = re.search(r"_(\d+)b(?:__|$)", name)
+    info["bitwidth"] = int(bw_match.group(1)) if bw_match else 8
+
+    # Extract problem name (after double-underscore for new format)
+    if "__" in name:
+        info["problem"] = name.split("__", 1)[1]
+    else:
+        # Legacy format: strip mac prefix and constraint suffix
+        legacy = re.sub(r"^\d+mac_", "", name)
+        legacy = re.sub(r"_splitbuf(_hard)?$", "", legacy)
+        info["problem"] = legacy if legacy else name
+
+    return info
 
 
 def collect_row(result_dir: Path) -> Dict[str, object]:
@@ -258,9 +277,9 @@ def collect_row(result_dir: Path) -> Dict[str, object]:
         raise FileNotFoundError(f"Missing {stats_path}")
 
     row: Dict[str, object] = {
-        "config": detect_config_from_dir(result_dir),
         "result_dir": str(result_dir).replace("\\", "/"),
     }
+    row.update(detect_config_from_dir(result_dir))
     row.update(parse_stats(stats_path))
     if map_yaml_path.exists():
         row.update(parse_map_yaml(map_yaml_path))
@@ -274,12 +293,13 @@ def main() -> None:
     parser.add_argument(
         "result_dirs",
         nargs="*",
-        help="Timeloop result directories to include. Defaults to timeloop/results/{1,3,9}mac_16x16",
+        help="Timeloop result directories to include. "
+        "Defaults to auto-discovering all dirs under timeloop/results/ with stats files.",
     )
     parser.add_argument(
         "-o",
         "--output",
-        default="timeloop/results/timeloop_summary_1_3_9mac_16x16.csv",
+        default="timeloop/results/timeloop_dse_full_sweep.csv",
         help="Output CSV path",
     )
     args = parser.parse_args()
@@ -287,18 +307,22 @@ def main() -> None:
     if args.result_dirs:
         result_dirs = [Path(p) for p in args.result_dirs]
     else:
-        result_dirs = [
-            Path("timeloop/results/1mac_16x16"),
-            Path("timeloop/results/3mac_16x16"),
-            Path("timeloop/results/9mac_16x16"),
-        ]
+        results_root = Path("timeloop/results")
+        result_dirs = sorted(
+            d
+            for d in results_root.iterdir()
+            if d.is_dir() and (d / "timeloop-mapper.stats.txt").exists()
+        )
 
     rows = [collect_row(p) for p in result_dirs]
-    rows.sort(key=lambda r: str(r.get("config", "")))
+    rows.sort(key=lambda r: (r.get("bitwidth", 8), r.get("mac_count", 0), str(r.get("problem", ""))))
 
     # Stable column order for easy spreadsheet import.
     preferred_columns = [
         "config",
+        "mac_count",
+        "bitwidth",
+        "problem",
         "result_dir",
         "gflops_at_1ghz",
         "utilization_pct",

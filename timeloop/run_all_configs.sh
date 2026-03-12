@@ -6,10 +6,21 @@
 
 set -e
 
+SKIP_EXISTING=${SKIP_EXISTING:-0}
+
 ARCHS=(
+  # INT8 (baseline)
   "arch/cnn_accel_9mac.yaml"
   "arch/cnn_accel_3mac.yaml"
   "arch/cnn_accel_1mac.yaml"
+  # INT4
+  "arch/cnn_accel_9mac_4b.yaml"
+  "arch/cnn_accel_3mac_4b.yaml"
+  "arch/cnn_accel_1mac_4b.yaml"
+  # INT16
+  "arch/cnn_accel_9mac_16b.yaml"
+  "arch/cnn_accel_3mac_16b.yaml"
+  "arch/cnn_accel_1mac_16b.yaml"
 )
 
 PROBLEMS=(
@@ -32,6 +43,11 @@ for arch in "${ARCHS[@]}"; do
     arch_name=$(basename "$arch" .yaml)
     prob_name=$(basename "$problem" .yaml)
     outdir="results/${arch_name}__${prob_name}"
+
+    if [[ "$SKIP_EXISTING" == "1" && -f "$outdir/timeloop-mapper.stats.txt" ]]; then
+      echo "--- SKIP (exists): $arch_name + $prob_name ---"
+      continue
+    fi
 
     echo "--- Running: $arch_name + $prob_name ---"
     ./run_timeloop.sh "$arch" "$problem" "$outdir"

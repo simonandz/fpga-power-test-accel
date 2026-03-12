@@ -1,0 +1,63 @@
+# CNN Accelerator Architecture - 3-MAC, INT4 Variant (v0.3 format)
+# Based on cnn_accel_3mac.yaml with all datawidths changed to 4-bit.
+# Uses primitive component classes that Accelergy's built-in plug-ins support.
+
+architecture:
+  version: 0.3
+
+  subtree:
+    - name: system
+      attributes:
+        technology: "45nm"
+
+      local:
+      - name: DRAM
+        class: DRAM
+        attributes:
+          width: 4
+          datawidth: 4
+          type: "LPDDR4"
+
+      subtree:
+      - name: chip
+
+        local:
+        - name: ifmap_buffer
+          class: SRAM
+          attributes:
+            depth: 324
+            width: 4
+            datawidth: 4
+            word_bits: 4
+            n_banks: 1
+            n_rdwr_ports: 2
+
+        - name: weight_buffer
+          class: SRAM
+          attributes:
+            depth: 9
+            width: 4
+            datawidth: 4
+            word_bits: 4
+            n_banks: 1
+            n_rdwr_ports: 2
+
+        - name: ofmap_buffer
+          class: SRAM
+          attributes:
+            depth: 256
+            width: 4
+            datawidth: 4
+            word_bits: 4
+            n_banks: 1
+            n_rdwr_ports: 2
+
+        subtree:
+        - name: PE[0..2]
+
+          local:
+          - name: mac
+            class: intmac
+            attributes:
+              datawidth: 4
+              width: 4

@@ -1,0 +1,17 @@
+DRAM [ Weights:36 (36) Inputs:324 (324) Outputs:1024 (1024) ] 
+-------------------------------------------------------------
+| for K in [0:2)
+
+ifmap_buffer [ Inputs:324 (324) ] 
+---------------------------------
+|   for K in [0:2)
+|     for Q in [0:4)
+|       for P in [0:16)
+
+weight_buffer [ Weights:9 (9) ] 
+ofmap_buffer [ Outputs:4 (4) ] 
+------------------------------
+|         for Q in [0:4)
+|           for S in [0:3)
+|             for R in [0:3)
+|               << Compute >>

@@ -1,0 +1,17 @@
+DRAM [ Weights:27 (27) Inputs:972 (972) Outputs:256 (256) ] 
+-----------------------------------------------------------
+| for C in [0:3)
+|   for Q in [0:2)
+
+ifmap_buffer [ Inputs:180 (180) ] 
+---------------------------------
+|     for P in [0:2)
+
+weight_buffer [ Weights:9 (9) ] 
+ofmap_buffer [ Outputs:64 (64) ] 
+--------------------------------
+|       for Q in [0:8)
+|         for S in [0:3)
+|           for R in [0:3)
+|             for P in [0:8) (Spatial-X)
+|               << Compute >>

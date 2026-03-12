@@ -1,0 +1,31 @@
+# Artix-7 Area Reference Table (ART) - INT4 Variant
+# MAC area scaled to 1200 um^2 (~0.5x of INT8 2400 um^2) — INT4 can pack
+# 2 MACs per DSP48E1 slice.
+# SRAM area unchanged (fixed BRAM block granularity on Artix-7).
+
+ART:
+  version: '0.4'
+  tables:
+    - name: system.DRAM
+      area: 0.0
+
+    - name: system.chip.global_buffer
+      area: 7680.0
+
+    - name: system.chip.ifmap_buffer
+      area: 7680.0
+
+    - name: system.chip.weight_buffer
+      area: 7680.0
+
+    - name: system.chip.ofmap_buffer
+      area: 7680.0
+
+    - name: system.chip.PE[0..8].mac
+      area: 1200.0
+
+    - name: system.chip.PE[0..2].mac
+      area: 1200.0
+
+    - name: system.chip.PE[0..0].mac
+      area: 1200.0

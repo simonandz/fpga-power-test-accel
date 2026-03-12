@@ -1,0 +1,31 @@
+# Artix-7 Area Reference Table (ART) - INT16 Variant
+# MAC area scaled to 4800 um^2 (~2x of INT8 2400 um^2) — INT16 requires
+# wider multiplier resources (potentially 2 DSP48E1 slices per MAC).
+# SRAM area unchanged (fixed BRAM block granularity on Artix-7).
+
+ART:
+  version: '0.4'
+  tables:
+    - name: system.DRAM
+      area: 0.0
+
+    - name: system.chip.global_buffer
+      area: 7680.0
+
+    - name: system.chip.ifmap_buffer
+      area: 7680.0
+
+    - name: system.chip.weight_buffer
+      area: 7680.0
+
+    - name: system.chip.ofmap_buffer
+      area: 7680.0
+
+    - name: system.chip.PE[0..8].mac
+      area: 4800.0
+
+    - name: system.chip.PE[0..2].mac
+      area: 4800.0
+
+    - name: system.chip.PE[0..0].mac
+      area: 4800.0

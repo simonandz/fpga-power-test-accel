@@ -1,0 +1,51 @@
+mapping:
+  - target: ofmap_buffer
+    type: datatype
+    keep:
+      - Outputs
+    bypass:
+      - Weights
+      - Inputs
+  - target: weight_buffer
+    type: datatype
+    keep:
+      - Weights
+    bypass:
+      - Inputs
+      - Outputs
+  - target: ifmap_buffer
+    type: datatype
+    keep:
+      - Inputs
+    bypass:
+      - Weights
+      - Outputs
+  - target: DRAM
+    type: datatype
+    keep:
+      - Weights
+      - Inputs
+      - Outputs
+    bypass:
+      []
+  - target: ofmap_buffer
+    type: spatial
+    factors: R3 S3 P1 Q1 C1 K1 N1
+    permutation: RSPQCKN
+    split: 2
+  - target: ofmap_buffer
+    type: temporal
+    factors: R1 S1 P4 Q8 C1 K1 N1
+    permutation: PQRSCKN
+  - target: weight_buffer
+    type: temporal
+    factors: R1 S1 P1 Q1 C1 K1 N1
+    permutation: RSPQCKN
+  - target: ifmap_buffer
+    type: temporal
+    factors: R1 S1 P1 Q1 C1 K1 N1
+    permutation: RSPQCKN
+  - target: DRAM
+    type: temporal
+    factors: R1 S1 P2 Q1 C1 K1 N1
+    permutation: PRSQCKN
